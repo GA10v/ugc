@@ -6,7 +6,7 @@ title AS IS
 
 agent Client
 agent Moderator_admin as Moderator
-card NGINX as Server
+card NGINX
 card Jaeger
 database Movies
 database Elasticsearch
@@ -20,11 +20,11 @@ frame ETL_sql{
 }
 
 ' связи Client/Moderator
-Client <--> Server: запросы [пользователь]
-Moderator <-> Server: запросы [модераторы, админ]
+Client <--> NGINX: запросы [пользователь]
+Moderator <-> NGINX: запросы [модераторы, админ]
 Moderator <.> Jaeger: запросы [аналитики, админ]
 Moderator --> _ETL: запуск скрипта для обновления данных
-Jaeger <..> Server: proxy
+Jaeger <..> NGINX: proxy
 
 _ETL --> Movies: загрузка обновленных данных
 
@@ -69,8 +69,8 @@ Tracer <-> Auth_Service: middleware
 }
 
 ' связи Admin_panel
-Server <--> Django_Admin: запросы [модераторы, админ]
-Server <.[#red].> Django_API: запросы фильмов/жанров/персон по UUID [legacy]
+NGINX <--> Django_Admin: запросы [модераторы, админ]
+NGINX <.[#red].> Django_API: запросы фильмов/жанров/персон по UUID [legacy]
 Django_API .[#red].> Elasticsearch: поиск контента[legacy]
 Django_API <.[#red]. Elasticsearch: результат поиска[legacy]
 Movies <--> Django_Admin: CRUD [модераторы, админ]
@@ -83,11 +83,11 @@ Transformer --> Loader: подготовленные данные
 Loader -> Elasticsearch: загрузка обновленных данных
 
 ' связи Async_API
-Server <-up-> Search_Services: запросы + access_token
+NGINX <-up-> Search_Services: запросы + access_token
 Search_Services -> Elasticsearch: поиск контента
 Search_Services <- Elasticsearch: результат поиска
 
 ' связи Auth
-Server <-> Auth_Service: получение/проверка токенов
+NGINX <-> Auth_Service: получение/проверка токенов
 Async_API <--> Flask_app: middleware
-Server <..> Tracer: логи
+NGINX <..> Tracer: логи
