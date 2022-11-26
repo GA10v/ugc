@@ -1,0 +1,20 @@
+
+@startuml insert
+!theme materia
+skinparam componentStyle uml2
+
+title SELECT
+
+Client -> "Distributed table": SELECT * FROM default.test
+
+"Distributed table" -> Zookeeper: - shard1 [SELECT]\n- shard2 [SELECT]
+
+Zookeeper -> "shard1\nreplica1": shard.test [SELECT]
+"shard1\nreplica1" --> "Distributed table": [2 row]
+
+Zookeeper -> "shard2\nreplica2": shard.test [SELECT]
+"shard2\nreplica2" --> "Distributed table": [1 row]
+
+"Distributed table" -> Client: [3 row]
+
+@enduml 

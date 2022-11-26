@@ -168,3 +168,4 @@ NGINX <-> Auth_Service: получение/проверка токенов
 Async_API <--> Flask_app: middleware
 NGINX <..> Tracer: логи
 
+@enduml

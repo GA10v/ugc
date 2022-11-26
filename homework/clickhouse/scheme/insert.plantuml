@@ -1,0 +1,32 @@
+@startuml insert
+!theme materia
+skinparam componentStyle uml2
+
+title INSERT
+
+
+Client -> "Distributed table": INSERT INTO default.test(...)
+
+"Distributed table" -> "Distributed table": Read pipeline [3 rows]
+"Distributed table" -> Zookeeper: - shard1 [2 rows]\n- shard2 [1 row]
+
+
+Zookeeper -> "shard1\nreplica1": shard.test [2 rows]
+"shard1\nreplica1" --> Zookeeper: Replicated OutputStream [2 rows]
+
+Zookeeper -> "shard2\nreplica2": shard.test [1 row]
+"shard2\nreplica2" --> Zookeeper: Replicated OutputStream [1 row]
+
+
+"shard1\nreplica1" <--> Zookeeper: shard.test [log]
+"shard1\nreplica1" <--> Zookeeper: replica.test [log]
+"shard2\nreplica2" <--> Zookeeper: shard.test [log]
+"shard2\nreplica2" <--> Zookeeper: replica.test [log]
+
+"shard1\nreplica1" -> Zookeeper: Done processing
+"shard2\nreplica2" -> Zookeeper: Done processing
+
+Zookeeper -> "Distributed table": Done processing
+"Distributed table" -> Client: Done processing
+
+@enduml 
