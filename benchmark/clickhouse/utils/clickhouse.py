@@ -1,9 +1,8 @@
 from datetime import datetime
 
 from clickhouse_driver import Client
-
-from .gen_data import Event
-from .settings import settings
+from utils.models import Event
+from utils.settings import settings
 
 
 class ClickhouseClient:
@@ -112,15 +111,12 @@ class ClickhouseClient:
 
         self.client.execute(command)
 
-    def select(
-        self,
-        table_name: str,
-        fields: list[str] = None,
-    ) -> list:
+    def select(self, table_name: str, fields: list[str] = None, movie_id: str = None) -> list:
         """
         Получение данных из таблицы.
         :param table_name: название таблицы
         :param data: сипсок событий
+        param movie_id: UUID
         """
 
         if fields:
@@ -128,5 +124,8 @@ class ClickhouseClient:
         else:
             fields = '*'
         command = f'SELECT {fields} FROM {table_name}'
+
+        if movie_id:
+            command += f" WHERE movie_id = '{movie_id}'"
 
         return self.client.execute(command)
