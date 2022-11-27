@@ -23,9 +23,17 @@ class FieldsSettings(BaseSettings):
     ORDER: str = 'movie_id'
 
 
+class TestSettings(BaseSettings):
+    TABLE: str = 'benchmark'
+    UUID: str = '4796fe00-fe9c-4def-a471-a9a4d448b60d'
+    BATCHES: list[int] = [1, 10, 100, 1000, 10000]
+    STRESS_SIZE: int = 1000000
+
+
 class BenchmarkSettings(BaseSettings):
     clickhouse: ClickHouseSettings = ClickHouseSettings()
     fields: FieldsSettings = FieldsSettings()
+    test_data: TestSettings = TestSettings()
 
 
 settings = BenchmarkSettings()
