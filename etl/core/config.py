@@ -13,8 +13,16 @@ class ClickhouseSettings(BaseConfig):
     URL: str = 'http://localhost:8123/'
     USER: str = None
     PASSWORD: str = None
+    CLUSTER: str = 'company_cluster'
     DATABASE: str = 'default'
-    TABLE: str = 'ugc'
+
+    TABLES: list[str] = ['ugc_event']
+    FIELDS: dict[str, str] = {
+        'user_id': 'VARCHAR(50) NOT NULL',
+        'movie_id': 'VARCHAR(50) NOT NULL',
+        'evetn': 'INTEGER NOT NULL',
+        'event_time': 'DATETIME NOT NULL',
+    }
 
     class Config:
         env_prefix = 'CLICKHOUSE_'
