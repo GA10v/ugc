@@ -5,10 +5,10 @@ from pydantic import BaseModel
 
 
 class Event(BaseModel):
-    user_id: UUID  # надо узнать что приходит из кафки UUID | str
-    movie_id: UUID  # надо узнать что приходит из кафки UUID | str
+    user_id: UUID  # надо узнать что приходит из transform UUID | str
+    movie_id: UUID  # надо узнать что приходит из transform UUID | str
     evetn: int
-    event_time: datetime  # надо узнать что приходит из кафки datetime | str
+    event_time: datetime  # надо узнать что приходит из transform datetime | str
 
     @property
     def dict(self) -> dict:
