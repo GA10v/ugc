@@ -1,71 +1,139 @@
 version: '3'
+
 services:
+  zookeeper:
+    image: zookeeper:3.5
+    container_name: zookeeper
+    hostname: zookeeper
 
-  db:
-    container_name: auth_db
-    image: postgres:14.3
-    environment:
-      POSTGRES_DB: $PG_DB
-      POSTGRES_USER: $PG_USER
-      POSTGRES_PASSWORD: $PG_PASSWORD
-    volumes:
-      - ./auth/db/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - db_data:/var/lib/postgresql/data
-    expose:
-      - 5432
-    env_file:
-      - .env
-    restart: always
-
-  auth:
-    container_name: auth
-    build:
-      context: .
-      args:
-        PROJECT_ENV: production
-    env_file:
-      - .env
-    entrypoint: ["sh", "src/run.sh"]
-    depends_on:
-      - db
-      - redis
-    expose:
-      - 5000
-    restart: always
-
-  redis:
-    container_name: auth_redis
-    image: redis:7.0.4-alpine
-    expose:
-      - 6379
-    restart: always
-    volumes:
-      - cache:/data
-
-  nginx:
-      container_name: auth_nginx
-      image: nginx:1.23
-      volumes:
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        - ./nginx/configs:/etc/nginx/conf.d:ro
-      depends_on:
-        - auth
-      ports:
-        - "10080:80"
-        - "10443:443"
-      restart: always
-
-  jaeger:
-    container_name: auth_jaeger
-    image: jaegertracing/all-in-one:latest
-    depends_on:
-      - nginx
+  clickhouse-node1:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-master
+    hostname: clickhouse-node1
     ports:
-      - "6831:6831/udp"
-      - "16686:16686"
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./ch_conf/node1:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+  clickhouse-node2:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node2
+    hostname: clickhouse-node2
+    volumes:
+      - ./ch_conf/node2:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+  clickhouse-node3:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node3
+    hostname: clickhouse-node3
+    ports:
+      - "8123:8123"
+      - "9001:9000"
+    volumes:
+      - ./ch_conf/node3:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+  clickhouse-node4:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node4
+    hostname: clickhouse-node4
+    volumes:
+      - ./ch_conf/node4:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+  clickhouse-node5:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node4
+    hostname: clickhouse-node5
+    ports:
+      - "8123:8123"
+      - "9002:9000"
+    volumes:
+      - ./ch_conf/node5:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+  clickhouse-node6:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node6
+    hostname: clickhouse-node4
+    volumes:
+      - ./ch_conf/node6:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+#   db:
+#     container_name: auth_db
+#     image: postgres:14.3
+#     environment:
+#       POSTGRES_DB: $PG_DB
+#       POSTGRES_USER: $PG_USER
+#       POSTGRES_PASSWORD: $PG_PASSWORD
+#     volumes:
+#       - ./auth/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+#       - db_data:/var/lib/postgresql/data
+#     expose:
+#       - 5432
+#     env_file:
+#       - .env
+#     restart: always
+
+#   auth:
+#     container_name: auth
+#     build:
+#       context: .
+#       args:
+#         PROJECT_ENV: production
+#     env_file:
+#       - .env
+#     entrypoint: ["sh", "src/run.sh"]
+#     depends_on:
+#       - db
+#       - redis
+#     expose:
+#       - 5000
+#     restart: always
+
+#   redis:
+#     container_name: auth_redis
+#     image: redis:7.0.4-alpine
+#     expose:
+#       - 6379
+#     restart: always
+#     volumes:
+#       - cache:/data
+
+#   nginx:
+#       container_name: auth_nginx
+#       image: nginx:1.23
+#       volumes:
+#         - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#         - ./nginx/configs:/etc/nginx/conf.d:ro
+#       depends_on:
+#         - auth
+#       ports:
+#         - "10080:80"
+#         - "10443:443"
+#       restart: always
+
+#   jaeger:
+#     container_name: auth_jaeger
+#     image: jaegertracing/all-in-one:latest
+#     depends_on:
+#       - nginx
+#     ports:
+#       - "6831:6831/udp"
+#       - "16686:16686"
 
 
 
-volumes:
-  db_data:
-  cache:
+# volumes:
+#   db_data:
+#   cache:
