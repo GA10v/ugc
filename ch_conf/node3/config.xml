@@ -37,6 +37,7 @@
     <remote_servers>
         <company_cluster>
             <shard>
+            <internal_replication>true</internal_replication>
                 <replica>
                     <default_database>shard</default_database>
                     <host>clickhouse-node1</host>
@@ -60,6 +61,18 @@
                     <port>9000</port>
                 </replica>
             </shard>
+            <shard>
+                <replica>
+                    <default_database>shard</default_database>
+                    <host>clickhouse-node5</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <default_database>replica</default_database>
+                    <host>clickhouse-node6</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
         </company_cluster>
     </remote_servers>
 
@@ -72,8 +85,10 @@
 
     <macros>
         <cluster>company_cluster</cluster>
-        <shard>2</shard>
-        <replica>clickhouse-node3</replica>
+        <shard01>2</shard01>
+        <replica01>clickhouse-node2</replica01>
+        <shard02>1</shard02>
+        <replica01>clickhouse-node1</replica01>
     </macros>
 
     <distributed_ddl>
