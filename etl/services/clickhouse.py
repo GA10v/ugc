@@ -40,6 +40,7 @@ class ClickHouseClientETL:
             return client.execute(command, values)
         except errors.ServerException as ex:
             if ex.code != 57:
+                logger.error('Ошибка запроса в ClickHouse: \n %s', str(ex))
                 raise ex
 
     def _create_db(self, db: str, client: Client) -> None:
@@ -79,14 +80,14 @@ class ClickHouseClientETL:
     def init_db(self) -> None:
         """Создание БД и Таблиц."""
 
-        # на весь кластер:
+        logger.info('Кластер: Запуск создания БД и дистрибутивных таблиц')
         self._create_db(self.db, self.client)
         for db in self.databases:
             self._create_db(db, self.client)
         for table in self.tables:
             self._create_distributed_table(table, self.client)
 
-        #  1 нода:
+        logger.info('Нода 1: Запуск создания реплицированных таблиц')
         client = self._get_client(self.host, self.port)
         for table in self.tables:
             self._create_replicated_tables(
@@ -96,7 +97,7 @@ class ClickHouseClientETL:
                 client=client,
             )
 
-        #  3 нода:
+        logger.info('Нода 3: Запуск создания реплицированных таблиц')
         client = self._get_client(self.host, self.sub[0])
         for table in self.tables:
             self._create_replicated_tables(
@@ -106,7 +107,7 @@ class ClickHouseClientETL:
                 client=client,
             )
 
-        #  5 нода:
+        logger.info('Нода 5: Запуск создания реплицированных таблиц')
         client = self._get_client(self.host, self.sub[1])
         for table in self.tables:
 
