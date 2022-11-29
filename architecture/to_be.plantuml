@@ -26,44 +26,32 @@ node UGC {
         card Zookeeper
         database ClickHouse{
             component "cluster 1"{
-                component server_1 {
+                component Shard_1 {
                     cloud "Distributed table" as Distributed1_1
                     database "shard1\nreplica1" as replica1_1
-                    database "shard2\nreplica1" as replica1_2
-                    database "shard3\nreplica1" as replica1_3
+                    database "shard1\nreplica3" as replica1_2
                 }
-                component server_2 {
+                component Shard_2 {
                     cloud "Distributed table" as Distributed1_2
-                    database "shard1\nreplica2" as replica1_4
-                    database "shard2\nreplica2" as replica1_5
-                    database "shard3\nreplica2" as replica1_6
+                    database "shard2\nreplica2" as replica2_1
+                    database "shard2\nreplica3" as replica2_2
                 }
 
-                component server_3 {
+                component Shard_3 {
                     cloud "Distributed table" as Distributed1_3
-                    database "shard1\nreplica3" as replica1_7
-                    database "shard2\nreplica3" as replica1_8
-                    database "shard3\nreplica3" as replica1_9
+                    database "shard3\nreplica3" as replica3_1
+                    database "shard3\nreplica1" as replica3_2
                 }
 
                 '  связи cluster 1
                 Distributed1_1 <--> replica1_1: запросы к локальным репликам
-                replica1_1 <..> replica1_2
-                replica1_1 <..> replica1_3
-                replica1_1 <..> replica1_4
-                replica1_1 <..> replica1_6
-                replica1_1 <..> replica1_5
-                Distributed1_2 <--> replica1_4: запросы к локальным репликам
-                replica1_4 <..> replica1_5
-                replica1_4 <..> replica1_6
-                replica1_4 <..> replica1_2
-                replica1_4 <..> replica1_3
-                Distributed1_3 <--> replica1_7: запросы к локальным репликам
-                replica1_7 <..> replica1_8
-                replica1_7 <..> replica1_9
-                replica1_7 <..> replica1_4: INSERT/FETCH/MERGE
-                replica1_7 <..> replica1_6
-                replica1_4 <..> replica1_8
+                Distributed1_1 <--> replica1_2: запросы к локальным репликам
+                Distributed1_2 <--> replica2_1: запросы к локальным репликам
+                Distributed1_2 <--> replica2_2: запросы к локальным репликам
+                Distributed1_3 <--> replica3_1: запросы к локальным репликам
+                Distributed1_3 <--> replica3_2: запросы к локальным репликам
+
+
             }
 
         '  связи Zookeeper - servers
