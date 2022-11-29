@@ -8,7 +8,7 @@ services:
 
   clickhouse-node1:
     image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-master
+    container_name: clickhouse-node1
     hostname: clickhouse-node1
     ports:
       - "8123:8123"
@@ -32,7 +32,7 @@ services:
     container_name: clickhouse-node3
     hostname: clickhouse-node3
     ports:
-      - "8123:8123"
+      - "8124:8123"
       - "9001:9000"
     volumes:
       - ./ch_conf/node3:/etc/clickhouse-server
@@ -50,10 +50,10 @@ services:
 
   clickhouse-node5:
     image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node4
+    container_name: clickhouse-node5
     hostname: clickhouse-node5
     ports:
-      - "8123:8123"
+      - "8125:8123"
       - "9002:9000"
     volumes:
       - ./ch_conf/node5:/etc/clickhouse-server
@@ -63,7 +63,7 @@ services:
   clickhouse-node6:
     image: yandex/clickhouse-server:20.4
     container_name: clickhouse-node6
-    hostname: clickhouse-node4
+    hostname: clickhouse-node6
     volumes:
       - ./ch_conf/node6:/etc/clickhouse-server
     depends_on:
