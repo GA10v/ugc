@@ -1,3 +1,4 @@
+import backoff
 from clickhouse_driver import Client, errors
 from core.config import settings
 from core.logger import get_logger
@@ -26,7 +27,7 @@ class ClickHouseClientETL:
         self.databases = settings.ch.databases
         self.client = Client(host, port)
 
-    # TODO: backoff
+    @backoff.on_exception(backoff.expo, errors.Error)
     def _get_client(self, host: str, port: str | int) -> Client:
         """Реализация отказоустойчивости."""
 
