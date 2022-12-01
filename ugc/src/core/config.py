@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 from logging import config as logging_config
 from pathlib import Path
@@ -10,32 +11,36 @@ logging_config.dictConfig(LOGGING)
 
 class BaseConfig(BaseSettings):
     class Config:
-        env_file = Path(Path(__file__).parent.parent.parent, '.env')
+        env_file = Path(Path(__file__).parent.parent.parent.parent, '.env')
         env_file_encoding = 'utf-8'
 
 
-class RedisSettings(BaseConfig):
-    HOST: str = '127.0.0.1'
-    PORT: int = 6379
-
-    class Config:
-        env_prefix = 'REDIS_'
-
-    @property
-    def url(self):
-        return f'redis://{self.HOST}:{self.PORT}'
-
-
-class ElasticSettings(BaseConfig):
-    HOST: str = '127.0.0.1'
-    PORT: int = 9200
-
-    class Config:
-        env_prefix = 'ES_'
+class KafkaSettings(BaseSettings):
+    BOOTSTRAP_SERVERS: str = 'localhost:9093'
+    CONSUMER_HOST: str = 'localhost:29092'
+    TOPICS: list[str] = ['views', 'rating']
+    CONSUMER_GROUP: str = 'group-id'
+    BATCH_SIZE: int = 10
+    loop = asyncio.get_event_loop()
 
     @property
-    def hosts(self):
-        return [{'host': self.HOST, 'port': self.PORT}]
+    def producer_conf(self):
+        return {
+            'loop': self.loop,
+            'bootstrap_servers': self.BOOTSTRAP_SERVERS,
+        }
+
+    @property
+    def consumer_conf(self):
+        return {
+            'host': self.CONSUMER_HOST,
+            'topics': self.TOPICS,
+            'group_id': self.CONSUMER_GROUP,
+            'batch_size': self.BATCH_SIZE,
+        }
+
+    class Config:
+        env_prefix = 'KAFKA_'
 
 
 class JWTSettings(BaseConfig):
@@ -54,35 +59,12 @@ class PermissionSettings(Enum):
     Moderator = 3
 
 
-class AuthSettings(BaseConfig):
-    HOST: str = '127.0.0.1'
-    PORT: int = 10443
-
-    class Config:
-        env_prefix = 'AUTH_'
-
-    @property
-    def url(self):
-        return f'http://{self.HOST}:{self.PORT}/api/v1/fastapi/'
-
-
-class DebugSettings(BaseConfig):
-    DEBUG: bool = True
-    access_token: str = '...'
-
-
 class ProjectSettings(BaseConfig):
-
-    SECRET: str = '245585dbb5cbe2f151742298d61d364880575bff0bdcbf4ae383f0180e7e47dd'
-    PROJECT_NAME: str = 'movies'
+    PROJECT_NAME: str = 'UGC'
     BASE_DIR = Path(__file__).parent.parent
-    FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
-    redis: RedisSettings = RedisSettings()
-    elastic: ElasticSettings = ElasticSettings()
-    jwt: JWTSettings = JWTSettings()
     permission = PermissionSettings
-    auth: AuthSettings = AuthSettings()
-    debug: DebugSettings = DebugSettings()
+    jwt: JWTSettings = JWTSettings()
+    kafka: KafkaSettings = KafkaSettings()
 
 
 settings = ProjectSettings()
