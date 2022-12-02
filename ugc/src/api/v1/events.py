@@ -2,9 +2,10 @@ from http import HTTPStatus
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from kafka.errors import KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableError
 from models.events import Event
 from services.broker.produser import KafkaProducer, get_producer
+
+from kafka.errors import KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableError
 
 router = APIRouter()
 
@@ -33,12 +34,11 @@ async def kafka_produce(
 
 @router.post(
     path='batch-produce',
-    #response_model=Event,
     summary='Отправка пачки событий.',
     description='Отправка пачки событий в топик kafka',
     response_description='Пачка событий',
 )
-async def kafka_produce(batch_size: int, producer: KafkaProducer = Depends(get_producer)):
+async def kafka_batch_produce(batch_size: int, producer: KafkaProducer = Depends(get_producer)):
     try:
         await producer.batch_produce(batch_size)
     except kafka_exceptions:

@@ -1,4 +1,3 @@
-import asyncio
 from enum import Enum
 from logging import config as logging_config
 from pathlib import Path
@@ -21,12 +20,10 @@ class KafkaSettings(BaseConfig):
     TOPICS: list[str] = ['views', 'rating']
     CONSUMER_GROUP: str = 'group-id'
     BATCH_SIZE: int = 10
-    #loop = asyncio.get_event_loop()
 
     @property
     def producer_conf(self):
         return {
-            #'loop': self.loop,
             'bootstrap_servers': self.BOOTSTRAP_SERVERS,
         }
 

@@ -1,20 +1,15 @@
-import asyncio
 import json
 from collections import defaultdict
-from functools import lru_cache
 from datetime import datetime
-from uuid import UUID
+from functools import lru_cache
 from typing import Optional, Tuple
+from uuid import UUID
 
 from aiokafka import AIOKafkaProducer
-from core.config import settings
-from fastapi import Request, Response, Depends
+from fastapi import Depends
 from models.events import Event, EventInfo, fake_batch
 from services.broker.protocol import ProducerProtocol
 
-
-# loop = asyncio.get_event_loop()
-# aioproducer = AIOKafkaProducer(loop=loop, **settings.kafka.producer_conf)
 aioproducer: Optional[AIOKafkaProducer] = None
 
 
@@ -44,12 +39,7 @@ class KafkaProducer(ProducerProtocol):
     def _get_event(user_id: str | UUID, movie_id: str | UUID, event: int, event_type: str) -> Event:
         return Event(
             event_type=event_type,
-            event_info=EventInfo(
-                user_id=user_id,
-                movie_id=movie_id,
-                event=event,
-                event_time=datetime.now()
-            )
+            event_info=EventInfo(user_id=user_id, movie_id=movie_id, event=event, event_time=datetime.now()),
         )
 
     @staticmethod
@@ -60,9 +50,7 @@ class KafkaProducer(ProducerProtocol):
         user_id = self._get_user_id()
         event = self._get_event(user_id, movie_id, event, event_type)
         await self.aioproducer.send_and_wait(
-            topic=event_type,
-            value=self._serialize(event),
-            key=self._create_key(user_id, movie_id, event_type)
+            topic=event_type, value=self._serialize(event), key=self._create_key(user_id, movie_id, event_type),
         )
         return event
 
@@ -72,19 +60,14 @@ class KafkaProducer(ProducerProtocol):
         for event in event_list:
             user_id, movie_id, event_type = self._parse_event(event)
             batch_dict[event_type].append(
-                value=self._serialize(event),
-                key=self._create_key(user_id, movie_id, event_type),
-                timestamp=None
+                value=self._serialize(event), key=self._create_key(user_id, movie_id, event_type), timestamp=None,
             )
-        print(batch_dict['rating'].record_count(), batch_dict['views'].record_count())
+
         for topic in batch_dict:
             batch = batch_dict[topic]
             batch.close()
             fut = await self.aioproducer.send_batch(batch, topic=topic, partition=0)
-            print(await fut)
-
-
-# producer: KafkaProducer = KafkaProducer()
+            await fut
 
 
 @lru_cache()
