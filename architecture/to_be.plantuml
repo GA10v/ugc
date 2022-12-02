@@ -1,0 +1,159 @@
+@startuml to_be
+!theme materia
+skinparam componentStyle uml2
+
+title TO BE
+
+agent Client
+card NGINX
+
+' связи Client/Moderator
+Client <-> NGINX: запросы
+
+node UGC {
+    frame OLTP {
+        file service
+        card Kafka
+
+        service -left-> Kafka: данные о событиях
+    }
+
+    frame ETL as ETL_Kafka_Zookeeper {
+        file main
+    }
+
+    frame OLAP {
+        card Zookeeper
+        database ClickHouse{
+            component "cluster 1"{
+                component Shard_1 {
+                    cloud "Distributed table" as Distributed1_1
+                    database "shard1\nreplica1" as replica1_1
+                    database "shard1\nreplica3" as replica1_2
+                }
+                component Shard_2 {
+                    cloud "Distributed table" as Distributed1_2
+                    database "shard2\nreplica2" as replica2_1
+                    database "shard2\nreplica3" as replica2_2
+                }
+
+                component Shard_3 {
+                    cloud "Distributed table" as Distributed1_3
+                    database "shard3\nreplica3" as replica3_1
+                    database "shard3\nreplica1" as replica3_2
+                }
+
+                '  связи cluster 1
+                Distributed1_1 <--> replica1_1: запросы к локальным репликам
+                Distributed1_1 <--> replica1_2: запросы к локальным репликам
+                Distributed1_2 <--> replica2_1: запросы к локальным репликам
+                Distributed1_2 <--> replica2_2: запросы к локальным репликам
+                Distributed1_3 <--> replica3_1: запросы к локальным репликам
+                Distributed1_3 <--> replica3_2: запросы к локальным репликам
+
+
+            }
+
+        '  связи Zookeeper - servers
+        Zookeeper <--> Distributed1_1: запросы на запись
+        Zookeeper <--> Distributed1_2: запросы на запись
+        Zookeeper <--> Distributed1_3: запросы на запись
+    }
+}
+}
+
+NGINX <--> service: события
+Kafka -down-> ETL_Kafka_Zookeeper: данные о событииях
+ETL_Kafka_Zookeeper -down-> Zookeeper: butch данных для записи
+
+
+
+
+
+agent Moderator_admin as Moderator
+card Jaeger
+database Movies
+database Elasticsearch
+
+frame ETL_sql{
+    database sqlite
+    component _ETL
+
+    sqlite -> _ETL: загрузка данных
+    sqlite <- _ETL: sql запросы
+}
+
+' связи Client/Moderator
+Client <--> NGINX: запросы [пользователь]
+Moderator <-> NGINX: запросы [модераторы, админ]
+Moderator <.> Jaeger: запросы [аналитики, админ]
+Moderator --> _ETL: запуск скрипта для обновления данных
+Jaeger <..> NGINX: proxy
+
+_ETL --> Movies: загрузка обновленных данных
+
+node App {
+    frame ETL {
+        database state
+        file Loader
+        file Transformer
+        file Extractor
+
+        state -> Extractor: проверка состояния
+        Loader --> state: обновление состояния
+    }
+
+    frame Admin_panel {
+        component Django_Admin
+        component Django_API
+    }
+
+    frame Async_API {
+        database cache
+        component Search_Services
+
+        Search_Services <-> cache: кэширование
+    }
+}
+
+node Auth {
+    database Users
+    frame Flask_app{
+        component Auth_Service
+        file Tracer
+        cloud OAuth2 {
+            component Yandex
+            component Google
+    }
+
+Users <--> Auth_Service: работа с данными пользователей
+Auth_Service <--> OAuth2: авторизация через соц.сети
+Tracer <-> Auth_Service: middleware
+}
+}
+
+' связи Admin_panel
+NGINX <--> Django_Admin: запросы [модераторы, админ]
+NGINX <.[#red].> Django_API: запросы фильмов/жанров/персон по UUID [legacy]
+Django_API .[#red].> Elasticsearch: поиск контента[legacy]
+Django_API <.[#red]. Elasticsearch: результат поиска[legacy]
+Movies <--> Django_Admin: CRUD [модераторы, админ]
+
+' связи ETL
+Movies -> Extractor: загрузка данных
+Movies <- Extractor: sql запросы
+Extractor --> Transformer: сырые данные
+Transformer --> Loader: подготовленные данные
+Loader -> Elasticsearch: загрузка обновленных данных
+
+' связи Async_API
+NGINX <-up-> Search_Services: запросы + access_token
+Search_Services -> Elasticsearch: поиск контента
+Search_Services <- Elasticsearch: результат поиска
+
+' связи Auth
+NGINX <-> Auth_Service: получение/проверка токенов
+Async_API <--> Flask_app: middleware
+NGINX <..> Tracer: логи
+
+@enduml
