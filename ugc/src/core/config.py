@@ -2,9 +2,8 @@ from enum import Enum
 from logging import config as logging_config
 from pathlib import Path
 
-from pydantic import BaseSettings
-
 from core.logger import LOGGING
+from pydantic import BaseSettings
 
 logging_config.dictConfig(LOGGING)
 
@@ -67,7 +66,7 @@ class AuthSettings(BaseConfig):
         return f'http://{self.HOST}:{self.PORT}/api/v1/fastapi/'
 
 
-class DebugSettings:
+class DebugSettings(BaseConfig):
     DEBUG: bool = True
     access_token: str = '...'
 
