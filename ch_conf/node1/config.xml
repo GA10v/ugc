@@ -37,26 +37,39 @@
     <remote_servers>
         <company_cluster>
             <shard>
+            <internal_replication>true</internal_replication>
                 <replica>
-                    <default_database>shard</default_database>
+                    <default_database>shard01</default_database>
                     <host>clickhouse-node1</host>
                     <port>9000</port>
                 </replica>
                 <replica>
-                    <default_database>replica</default_database>
+                    <default_database>shard01</default_database>
                     <host>clickhouse-node2</host>
                     <port>9000</port>
                 </replica>
             </shard>
             <shard>
                 <replica>
-                    <default_database>shard</default_database>
+                    <default_database>shard02</default_database>
                     <host>clickhouse-node3</host>
                     <port>9000</port>
                 </replica>
                 <replica>
-                    <default_database>replica</default_database>
+                    <default_database>shard02</default_database>
                     <host>clickhouse-node4</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <replica>
+                    <default_database>shard03</default_database>
+                    <host>clickhouse-node5</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <default_database>shard03</default_database>
+                    <host>clickhouse-node6</host>
                     <port>9000</port>
                 </replica>
             </shard>
@@ -72,8 +85,10 @@
 
     <macros>
         <cluster>company_cluster</cluster>
-        <shard>1</shard>
-        <replica>clickhouse-node1</replica>
+        <shard01>s1</shard01>
+        <replica01>s1-r1</replica01>
+        <shard02>s3</shard02>
+        <replica02>s3-r2</replica02>
     </macros>
 
     <distributed_ddl>
