@@ -19,7 +19,7 @@ class ClickhouseSettings(BaseConfig):
     DATABASE: str = 'default'
     databases: list[str] = ['shard01', 'shard02', 'shard03']
 
-    TABLES: list[str] = ['ugc_event']
+    TABLES: list[str] = ['views', 'rating']
     FIELDS: dict[str, str] = {
         'user_id': 'String',
         'movie_id': 'String',
@@ -43,8 +43,29 @@ class ClickhouseSettings(BaseConfig):
         env_prefix = 'CLICKHOUSE_'
 
 
+class KafkaSettings(BaseSettings):
+    BOOTSTRAP_SERVERS: str = 'localhost:9093'
+    CONSUMER_HOST: str = 'localhost:29092'
+    TOPICS: list[str] = ['views', 'rating']
+    CONSUMER_GROUP: str = 'group-id'
+    BATCH_SIZE: int = 10
+
+    @property
+    def consumer_conf(self):
+        return {
+            'host': self.CONSUMER_HOST,
+            'topics': self.TOPICS,
+            'group_id': self.CONSUMER_GROUP,
+            'batch_size': self.BATCH_SIZE,
+        }
+
+    class Config:
+        env_prefix = 'KAFKA_'
+
+
 class ProjectSettings(BaseConfig):
     ch: ClickhouseSettings = ClickhouseSettings()
+    kafka: KafkaSettings = KafkaSettings()
 
 
 settings = ProjectSettings()
