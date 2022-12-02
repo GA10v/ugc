@@ -11,22 +11,22 @@ logging_config.dictConfig(LOGGING)
 
 class BaseConfig(BaseSettings):
     class Config:
-        env_file = Path(Path(__file__).parent.parent.parent.parent, '.env')
+        env_file = Path(Path(__file__).parent.parent.parent.parent, '../../../.env')
         env_file_encoding = 'utf-8'
 
 
-class KafkaSettings(BaseSettings):
+class KafkaSettings(BaseConfig):
     BOOTSTRAP_SERVERS: str = 'localhost:9093'
     CONSUMER_HOST: str = 'localhost:29092'
     TOPICS: list[str] = ['views', 'rating']
     CONSUMER_GROUP: str = 'group-id'
     BATCH_SIZE: int = 10
-    loop = asyncio.get_event_loop()
+    #loop = asyncio.get_event_loop()
 
     @property
     def producer_conf(self):
         return {
-            'loop': self.loop,
+            #'loop': self.loop,
             'bootstrap_servers': self.BOOTSTRAP_SERVERS,
         }
 

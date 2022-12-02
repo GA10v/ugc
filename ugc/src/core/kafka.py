@@ -1,7 +1,7 @@
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 
-producer = AIOKafkaProducer()
-consumer = AIOKafkaConsumer()
+producer = AIOKafkaProducer
+consumer = AIOKafkaConsumer
 
 
 async def get_producer(*args, **kwargs) -> producer:

@@ -10,7 +10,7 @@ def auth_middleware(app: FastAPI):
     @app.middleware('http')
     async def check_jwt(request: Request, call_next):
         auth_header = request.headers.get('Authorization')
-        if auth_header in None:
+        if auth_header is None:
             return Response('Authorization header is missing', HTTPStatus.UNAUTHORIZED)
         claims = parse_header(auth_header)['claims']
         if claims.get('is_super'):
