@@ -1,5 +1,6 @@
 import backoff
 from clickhouse_driver import Client, errors
+
 from core.config import settings
 from core.logger import get_logger
 from models.event import events
@@ -13,7 +14,7 @@ class ClickHouseClientETL(LoaderProtocol):
         self,
         host: str,
         port: int,
-        sub: list[int],
+        sub: list[tuple],
         db: str,
         tables: list[str],
         fields: dict[str, str],
@@ -26,10 +27,10 @@ class ClickHouseClientETL(LoaderProtocol):
         self.db = db
         self.tables = tables
         self.fields = fields
-        self.databases = settings.ch.databases
+        self.databases = settings.ch._databases
         self.client = Client(host, port)
 
-    @backoff.on_exception(backoff.expo, errors.Error)
+    # @backoff.on_exception(backoff.expo, errors.Error)
     def _get_client(self, host: str, port: str | int) -> Client:
         """Реализация отказоустойчивости."""
 
@@ -89,36 +90,36 @@ class ClickHouseClientETL(LoaderProtocol):
         for table in self.tables:
             self._create_distributed_table(table, self.client)
 
-        logger.info('Нода 1: Запуск создания реплицированных таблиц')
-        client = self._get_client(self.host, self.port)
-        for table in self.tables:
-            self._create_replicated_tables(
-                shard=self.databases[0],
-                replica=self.databases[2],
-                table=table,
-                client=client,
-            )
+        # logger.info('Нода 1: Запуск создания реплицированных таблиц')
+        # client = self._get_client(self.host, self.port)
+        # for table in self.tables:
+        #     self._create_replicated_tables(
+        #         shard=self.databases[0],
+        #         replica=self.databases[2],
+        #         table=table,
+        #         client=client,
+        #     )
 
-        logger.info('Нода 3: Запуск создания реплицированных таблиц')
-        client = self._get_client(self.host, self.sub[0])
-        for table in self.tables:
-            self._create_replicated_tables(
-                shard=self.databases[1],
-                replica=self.databases[0],
-                table=table,
-                client=client,
-            )
+        # logger.info('Нода 3: Запуск создания реплицированных таблиц')
+        # client = self._get_client(self.sub[0][0],self.sub[0][1])
+        # for table in self.tables:
+        #     self._create_replicated_tables(
+        #         shard=self.databases[1],
+        #         replica=self.databases[0],
+        #         table=table,
+        #         client=client,
+        #     )
 
-        logger.info('Нода 5: Запуск создания реплицированных таблиц')
-        client = self._get_client(self.host, self.sub[1])
-        for table in self.tables:
+        # logger.info('Нода 5: Запуск создания реплицированных таблиц')
+        # client = self._get_client(self.sub[1][0], self.sub[1][1])
+        # for table in self.tables:
 
-            self._create_replicated_tables(
-                shard=self.databases[2],
-                replica=self.databases[1],
-                table=table,
-                client=client,
-            )
+        #     self._create_replicated_tables(
+        #         shard=self.databases[2],
+        #         replica=self.databases[1],
+        #         table=table,
+        #         client=client,
+        #     )
 
     def load(self, data: dict[str, list[events]]) -> None:
         """Вставка данных в ClickHouse."""

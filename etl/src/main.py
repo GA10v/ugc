@@ -3,6 +3,7 @@ import sys
 from time import sleep
 
 from confluent_kafka import KafkaError, KafkaException
+
 from core.config import settings
 from models.event import EventKafka
 from services.extracter.consumer import KafkaConsumerETL
@@ -18,10 +19,11 @@ sleep_time = 5
 
 def main(consumer: KafkaConsumerETL, client: ClickHouseClientETL, transformer: TramsformerETL):
     try:
-        consumer.get_consumer().subscribe(consumer.topics)
+        _consumer = consumer.get_consumer()
+        _consumer.subscribe(consumer.topics)
 
         while running:
-            messages = consumer.consume(num_messages=100, timeout=1.0)
+            messages = _consumer.consume(num_messages=100, timeout=1.0)
             if messages is None:
                 continue
 
@@ -36,7 +38,7 @@ def main(consumer: KafkaConsumerETL, client: ClickHouseClientETL, transformer: T
                         )
                     elif message.error():
                         raise KafkaException(message.error())
-
+                print(json.loads(message.value()))
                 events.append(EventKafka(**json.loads(message.value())))
 
             if events:
@@ -46,7 +48,7 @@ def main(consumer: KafkaConsumerETL, client: ClickHouseClientETL, transformer: T
             sleep(sleep_time)
     finally:
         # Close down consumer to commit final offsets.
-        consumer.close()
+        _consumer.close()
 
 
 def shutdown():

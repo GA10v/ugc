@@ -16,6 +16,8 @@ class EventInfo(BaseOrjsonModel):
 
     def dict(self, *args, **kwargs) -> dict:
         _dict: dict = super().dict(*args, **kwargs)
+        _dict['user_id'] = str(_dict['user_id'])
+        _dict['movie_id'] = str(_dict['movie_id'])
         _dict['event_time'] = _dict['event_time'].strftime('%Y-%m-%d %H:%M:%S')
         return _dict
 
@@ -28,6 +30,8 @@ class EventRating(BaseOrjsonModel):
 
     def dict(self, *args, **kwargs) -> dict:
         _dict: dict = super().dict(*args, **kwargs)
+        _dict['user_id'] = str(_dict['user_id'])
+        _dict['movie_id'] = str(_dict['movie_id'])
         _dict['event_time'] = _dict['event_time'].strftime('%Y-%m-%d %H:%M:%S')
         return _dict
 

@@ -1,5 +1,6 @@
 import backoff
 from confluent_kafka import Consumer, KafkaError, KafkaException
+
 from services.extracter.protocol import ExtracterProtocol
 
 
@@ -20,7 +21,7 @@ class KafkaConsumerETL(ExtracterProtocol):
         self.batch_size = batch_size
         self.consumer = self._get_consumer()
 
-    @backoff.on_exception(backoff.expo, KafkaError, KafkaException)
+    @backoff.on_exception(backoff.expo, KafkaError)
     def get_consumer(self) -> Consumer:
         """Реализация отказоустойчивости."""
         return Consumer(self.conf)

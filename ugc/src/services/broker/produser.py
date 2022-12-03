@@ -7,6 +7,7 @@ from uuid import UUID
 
 from aiokafka import AIOKafkaProducer
 from fastapi import Depends
+
 from models.events import Event, EventInfo, EventRating, fake_batch
 from services.broker.protocol import ProducerProtocol
 
@@ -32,11 +33,11 @@ class KafkaProducer(ProducerProtocol):
         elif event_type == 'rating':
             return movie_id.encode('utf-8')
 
-    def _get_user_id(self) -> str | UUID:
+    def _get_user_id(self) -> str:
         return '1f9e1fc2-443f-46e9-bccf-0b406a1082b4'
 
     @staticmethod
-    def _get_event(user_id: str | UUID, movie_id: str | UUID, event: int, event_type: str) -> Event:
+    def _get_event(user_id: str | UUID, movie_id: str | UUID, event: int, event_type: str) -> Optional[Event]:
         if event_type == 'views':
             return Event(
                 event_type=event_type,
@@ -46,7 +47,7 @@ class KafkaProducer(ProducerProtocol):
             return Event(
                 event_type=event_type,
                 event_payload=EventRating(user_id=user_id, movie_id=movie_id, event=event, event_time=datetime.now()),
-            )
+            ).dict()
 
     @staticmethod
     def _parse_event(event: Event) -> Tuple[str | UUID, str | UUID, str]:

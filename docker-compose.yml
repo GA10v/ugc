@@ -19,9 +19,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     restart: always
 
@@ -52,6 +51,26 @@ services:
       - kafka
     restart: on-failure
 
+  etl:
+    container_name: ugc_etl
+    build:
+      context: ./etl
+      dockerfile: ./Dockerfile
+    # volumes:
+    #   - etl_data:/src/data
+    env_file:
+      - .env
+    depends_on:
+      - fastapi
+      - kafka
+      - clickhouse-node1
+      - clickhouse-node2
+      - clickhouse-node3
+      - clickhouse-node4
+      - clickhouse-node5
+      - clickhouse-node6
+    restart: always
+
   clickhouse-zookeeper:
     image: zookeeper:3.5
     container_name: clickhouse-zookeeper
@@ -68,6 +87,7 @@ services:
       - "9000:9000"
     volumes:
       - ./ch_conf/node1:/etc/clickhouse-server
+      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -91,6 +111,7 @@ services:
       - "9001:9000"
     volumes:
       - ./ch_conf/node3:/etc/clickhouse-server
+      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -114,6 +135,7 @@ services:
       - "9002:9000"
     volumes:
       - ./ch_conf/node5:/etc/clickhouse-server
+      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 

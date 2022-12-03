@@ -2,8 +2,9 @@ from enum import Enum
 from logging import config as logging_config
 from pathlib import Path
 
-from core.logger import LOGGING
 from pydantic import BaseSettings
+
+from core.logger import LOGGING
 
 logging_config.dictConfig(LOGGING)
 
@@ -49,6 +50,15 @@ class JWTSettings(BaseConfig):
         env_prefix = 'JWT_'
 
 
+class FastapiSettings(BaseConfig):
+    HOST: str = 'localhost'
+    PORT: int = 8000
+    PREFIX: str = '/ugc_api/v1/event'
+
+    class Config:
+        env_prefix = 'FASTAPI_'
+
+
 class PermissionSettings(Enum):
     User = 0
     Subscriber = 1
@@ -66,6 +76,7 @@ class ProjectSettings(BaseConfig):
     permission = PermissionSettings
     jwt: JWTSettings = JWTSettings()
     kafka: KafkaSettings = KafkaSettings()
+    fastapi: FastapiSettings = FastapiSettings()
     debug: DebugSettings = DebugSettings()
 
 

@@ -3,11 +3,12 @@ import logging
 import uvicorn
 from aiokafka import AIOKafkaProducer
 from api.v1 import events
-from core.config import settings
-from core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from middleware.auth import auth_middleware
+
+from core.config import settings
+from core.logger import LOGGING
 from services.broker import produser
 
 app = FastAPI(
@@ -32,7 +33,7 @@ async def shutdown_event():
 if not settings.debug.DEBUG:
     auth_middleware(app=app)
 
-app.include_router(events.router, prefix='/ugc_api/v1/event', tags=['events'])
+app.include_router(events.router, prefix=settings.fastapi.PREFIX, tags=['events'])
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8001, log_config=LOGGING, log_level=logging.DEBUG)
