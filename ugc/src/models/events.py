@@ -1,6 +1,6 @@
 from datetime import datetime
 from random import choice, randint
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID, uuid4
 
 from core.config import settings
@@ -20,13 +20,24 @@ class EventInfo(BaseOrjsonModel):
         return _dict
 
 
-class Event(BaseOrjsonModel):
-    event_type: str
-    event_info: EventInfo
+class EventRating(BaseOrjsonModel):
+    user_id: str | UUID
+    movie_id: str | UUID
+    event: int
+    event_time: datetime
 
     def dict(self, *args, **kwargs) -> dict:
         _dict: dict = super().dict(*args, **kwargs)
+        _dict['event_time'] = _dict['event_time'].strftime('%Y-%m-%d %H:%M:%S')
         return _dict
+
+
+events = Union[EventInfo, EventRating]
+
+
+class Event(BaseOrjsonModel):
+    event_type: str
+    event_payload: events
 
 
 def fake_batch(batch_size: int) -> list[Event]:

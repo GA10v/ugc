@@ -1,10 +1,8 @@
-import asyncio
 import logging
 
 import uvicorn
 from aiokafka import AIOKafkaProducer
 from api.v1 import events
-from core import kafka
 from core.config import settings
 from core.logger import LOGGING
 from fastapi import FastAPI
@@ -31,7 +29,8 @@ async def shutdown_event():
     await produser.aioproducer.stop()
 
 
-# auth_middleware(app=app)
+if not settings.debug.DEBUG:
+    auth_middleware(app=app)
 
 app.include_router(events.router, prefix='/ugc_api/v1/event', tags=['events'])
 

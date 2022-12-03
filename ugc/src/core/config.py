@@ -56,12 +56,17 @@ class PermissionSettings(Enum):
     Moderator = 3
 
 
+class DebugSettings(BaseConfig):
+    DEBUG: bool = True
+
+
 class ProjectSettings(BaseConfig):
     PROJECT_NAME: str = 'UGC'
     BASE_DIR = Path(__file__).parent.parent
     permission = PermissionSettings
     jwt: JWTSettings = JWTSettings()
     kafka: KafkaSettings = KafkaSettings()
+    debug: DebugSettings = DebugSettings()
 
 
 settings = ProjectSettings()
