@@ -2,11 +2,13 @@ import backoff
 from clickhouse_driver import Client, errors
 from core.config import settings
 from core.logger import get_logger
+from models.event import events
+from services.loader.protocol import LoaderProtocol
 
 logger = get_logger(__name__)
 
 
-class ClickHouseClientETL:
+class ClickHouseClientETL(LoaderProtocol):
     def __init__(
         self,
         host: str,
@@ -78,7 +80,7 @@ class ClickHouseClientETL:
         self._execute(replica_command, client)
 
     def init_db(self) -> None:
-        """Создание БД и Таблиц."""
+        """Создание БД и Таблиц в ClickHouse."""
 
         logger.info('Кластер: Запуск создания БД и дистрибутивных таблиц')
         self._create_db(self.db, self.client)
@@ -118,6 +120,15 @@ class ClickHouseClientETL:
                 client=client,
             )
 
-    def load(self, data: list) -> None:
-        """Вставка данных в таблицу."""
-        ...
+    def load(self, data: dict[str, list[events]]) -> None:
+        """Вставка данных в ClickHouse."""
+
+        for event_type, batch in data.items():
+            _fields = list(batch[0].keys())
+            _values = []
+            for item in batch:
+                row = ', '.join([item.get(field) for field in _fields])
+                _values.append(f'({row})')
+            fields = ', '.join(_fields)
+            values = ', '.join(_values)
+            self.client.execute(f'INSERT INTO {self.db}.{event_type} ({fields}) VALUES {values}')
