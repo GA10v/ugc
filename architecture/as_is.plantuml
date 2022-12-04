@@ -1,0 +1,93 @@
+@startuml as_is
+!theme materia
+skinparam componentStyle uml2
+
+title AS IS
+
+agent Client
+agent Moderator_admin as Moderator
+card NGINX
+card Jaeger
+database Movies
+database Elasticsearch
+
+frame ETL_sql{
+    database sqlite
+    component _ETL
+
+    sqlite -> _ETL: загрузка данных
+    sqlite <- _ETL: sql запросы
+}
+
+' связи Client/Moderator
+Client <--> NGINX: запросы [пользователь]
+Moderator <-> NGINX: запросы [модераторы, админ]
+Moderator <.> Jaeger: запросы [аналитики, админ]
+Moderator --> _ETL: запуск скрипта для обновления данных
+Jaeger <..> NGINX: proxy
+
+_ETL --> Movies: загрузка обновленных данных
+
+node App {
+    frame ETL {
+        database state
+        file Loader
+        file Transformer
+        file Extractor
+
+        state -> Extractor: проверка состояния
+        Loader --> state: обновление состояния
+    }
+
+    frame Admin_panel {
+        component Django_Admin
+        component Django_API
+    }
+
+    frame Async_API {
+        database cache
+        component Search_Services
+
+        Search_Services <-> cache: кэширование
+    }
+}
+
+node Auth {
+    database Users
+    frame Flask_app{
+        component Auth_Service
+        file Tracer
+        cloud OAuth2 {
+            component Yandex
+            component Google
+    }
+
+Users <--> Auth_Service: работа с данными пользователей 
+Auth_Service <--> OAuth2: авторизация через соц.сети
+Tracer <-> Auth_Service: middleware
+}
+}
+
+' связи Admin_panel
+NGINX <--> Django_Admin: запросы [модераторы, админ]
+NGINX <.[#red].> Django_API: запросы фильмов/жанров/персон по UUID [legacy]
+Django_API .[#red].> Elasticsearch: поиск контента[legacy]
+Django_API <.[#red]. Elasticsearch: результат поиска[legacy]
+Movies <--> Django_Admin: CRUD [модераторы, админ]
+
+' связи ETL
+Movies -> Extractor: загрузка данных
+Movies <- Extractor: sql запросы
+Extractor --> Transformer: сырые данные
+Transformer --> Loader: подготовленные данные
+Loader -> Elasticsearch: загрузка обновленных данных
+
+' связи Async_API
+NGINX <-up-> Search_Services: запросы + access_token
+Search_Services -> Elasticsearch: поиск контента
+Search_Services <- Elasticsearch: результат поиска
+
+' связи Auth
+NGINX <-> Auth_Service: получение/проверка токенов
+Async_API <--> Flask_app: middleware
+NGINX <..> Tracer: логи
