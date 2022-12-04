@@ -1,39 +1,6 @@
 version: '3'
 
 services:
-#  zookeeper:
-#    image: zookeeper:3.5
-#    container_name: ugc_zookeeper
-#    hostname: zookeeper
-#    restart: always
-#    ports:
-#      - "2181:2181"
-#    volumes:
-#      - ./data/zookeeper/ch_zk-data:/var/lib/zookeeper/data \
-#      - ./data/zookeeper/ch_zk-txn-logs:/var/lib/zookeeper/log \
-#
-#  kafka:
-#    image: 'bitnami/kafka:latest'
-#    container_name: ugc_kafka
-#    restart: always
-#    ports:
-#      - "9093:9093"
-#    expose:
-#      - "9093"
-#    environment:
-#      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-#      - KAFKA_CREATE_TOPICS="kafka_capstone_event_bus:1:1"
-#      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
-#      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-#      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-#      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
-#      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
-#      - ALLOW_PLAINTEXT_LISTENER=yes
-#    depends_on:
-#      - zookeeper
-#    volumes:
-#      - ./data/kafka:/bitnami/kafka
-
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -52,23 +19,37 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     restart: always
+
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      kafka-topics --bootstrap-server kafka:29092 --list
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic views --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rating --replication-factor 1 --partitions 1
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
 
   nginx:
     container_name: nginx
     image: nginx:1.23
     volumes:
-     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-     - ./nginx/configs:/etc/nginx/conf.d:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs:/etc/nginx/conf.d:ro
     depends_on:
-     - fastapi
+      - fastapi
     ports:
-     - "80:80"
-     - "443:443"
+      # - "80:80"
+      - "443:443"
     restart: always
 
   fastapi:
@@ -84,6 +65,27 @@ services:
       - zookeeper
       - kafka
     restart: on-failure
+
+  etl:
+    container_name: ugc_etl
+    build:
+      context: ./etl
+      dockerfile: ./Dockerfile
+    # volumes:
+    #   - etl_data:/src/data
+    env_file:
+      - .env
+    depends_on:
+      - fastapi
+      - kafka
+      - init-kafka
+      - clickhouse-node1
+      - clickhouse-node2
+      - clickhouse-node3
+      - clickhouse-node4
+      - clickhouse-node5
+      - clickhouse-node6
+    restart: always
 
   clickhouse-zookeeper:
     image: zookeeper:3.5
@@ -101,6 +103,7 @@ services:
       - "9000:9000"
     volumes:
       - ./ch_conf/node1:/etc/clickhouse-server
+      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -111,6 +114,7 @@ services:
     restart: always
     volumes:
       - ./ch_conf/node2:/etc/clickhouse-server
+      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -124,6 +128,7 @@ services:
       - "9001:9000"
     volumes:
       - ./ch_conf/node3:/etc/clickhouse-server
+      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -134,6 +139,7 @@ services:
     restart: always
     volumes:
       - ./ch_conf/node4:/etc/clickhouse-server
+      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -147,6 +153,7 @@ services:
       - "9002:9000"
     volumes:
       - ./ch_conf/node5:/etc/clickhouse-server
+      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -157,74 +164,6 @@ services:
     restart: always
     volumes:
       - ./ch_conf/node6:/etc/clickhouse-server
+      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
-
-#   db:
-#     container_name: auth_db
-#     image: postgres:14.3
-#     environment:
-#       POSTGRES_DB: $PG_DB
-#       POSTGRES_USER: $PG_USER
-#       POSTGRES_PASSWORD: $PG_PASSWORD
-#     volumes:
-#       - ./auth/db/init.sql:/docker-entrypoint-initdb.d/init.sql
-#       - db_data:/var/lib/postgresql/data
-#     expose:
-#       - 5432
-#     env_file:
-#       - .env
-#     restart: always
-
-#   auth:
-#     container_name: auth
-#     build:
-#       context: .
-#       args:
-#         PROJECT_ENV: production
-#     env_file:
-#       - .env
-#     entrypoint: ["sh", "src/run.sh"]
-#     depends_on:
-#       - db
-#       - redis
-#     expose:
-#       - 5000
-#     restart: always
-
-#   redis:
-#     container_name: auth_redis
-#     image: redis:7.0.4-alpine
-#     expose:
-#       - 6379
-#     restart: always
-#     volumes:
-#       - cache:/data
-
-#   nginx:
-#       container_name: auth_nginx
-#       image: nginx:1.23
-#       volumes:
-#         - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-#         - ./nginx/configs:/etc/nginx/conf.d:ro
-#       depends_on:
-#         - auth
-#       ports:
-#         - "10080:80"
-#         - "10443:443"
-#       restart: always
-
-#   jaeger:
-#     container_name: auth_jaeger
-#     image: jaegertracing/all-in-one:latest
-#     depends_on:
-#       - nginx
-#     ports:
-#       - "6831:6831/udp"
-#       - "16686:16686"
-
-
-
-# volumes:
-#   db_data:
-#   cache:
