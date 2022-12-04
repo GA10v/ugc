@@ -1,8 +1,9 @@
 import typing
 
-from services.transformer.layer_models import events
+from services.transformer.layer_models import EventKafka, events
 
 
 class TransformerProtocol(typing.Protocol):
-    def transform() -> dict[str, list[events]]:
+    def transform(data: list[EventKafka]) -> dict[str, list[events]]:
+        """Подготовка данных для записи."""
         ...

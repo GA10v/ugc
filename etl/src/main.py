@@ -1,3 +1,4 @@
+import gc
 import json
 import sys
 from time import sleep
@@ -14,7 +15,7 @@ client = ClickHouseClientETL(**settings.ch.client_conf)
 consumer = KafkaConsumerETL(**settings.kafka.consumer_conf)
 transformer = TramsformerETL()
 running = True
-sleep_time = 5
+sleep_time = 2
 
 
 def main(consumer: KafkaConsumerETL, client: ClickHouseClientETL, transformer: TramsformerETL):
@@ -53,6 +54,7 @@ def main(consumer: KafkaConsumerETL, client: ClickHouseClientETL, transformer: T
                 events = transformer.transform(events)
                 client.load(events)
 
+            gc.collect()
             sleep(sleep_time)
     finally:
         # Close down consumer to commit final offsets.

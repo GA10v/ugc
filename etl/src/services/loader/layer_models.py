@@ -18,8 +18,3 @@ class ViewsEvent(BaseModel):
 
 
 events = Union[RatingEvent, ViewsEvent]
-
-
-class EventKafka(BaseModel):
-    event_type: str
-    event_payload: events
