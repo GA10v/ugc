@@ -4,7 +4,6 @@ import sys
 from time import sleep
 
 from confluent_kafka import KafkaError, KafkaException
-
 from core.config import settings
 from models.event import EventKafka, RatingEvent, ViewsEvent
 from services.extracter.consumer import KafkaConsumerETL

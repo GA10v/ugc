@@ -2,7 +2,6 @@ import typing
 from typing import Optional
 
 from clickhouse_driver import Client
-
 from services.loader.layer_models import events
 
 

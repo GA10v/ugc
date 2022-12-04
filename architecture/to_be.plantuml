@@ -12,21 +12,24 @@ Client <-> NGINX: запросы
 
 node UGC {
     frame OLTP {
-        file service
+        file UGC_API as service
         card Kafka
 
         service -left-> Kafka: данные о событиях
+        service <--> Flask_app
     }
 
     frame ETL as ETL_Kafka_Zookeeper {
-        file main
+        file Extract
+        file Load
+        file Transform
     }
 
     frame OLAP {
         card Zookeeper
         database ClickHouse{
             component "cluster 1"{
-                component Shard_1 {
+                component Shard_3 {
                     cloud "Distributed table" as Distributed1_1
                     database "shard1\nreplica1" as replica1_1
                     database "shard1\nreplica3" as replica1_2
@@ -37,7 +40,7 @@ node UGC {
                     database "shard2\nreplica3" as replica2_2
                 }
 
-                component Shard_3 {
+                component Shard_1 {
                     cloud "Distributed table" as Distributed1_3
                     database "shard3\nreplica3" as replica3_1
                     database "shard3\nreplica1" as replica3_2
@@ -63,8 +66,12 @@ node UGC {
 }
 
 NGINX <--> service: события
-Kafka -down-> ETL_Kafka_Zookeeper: данные о событииях
-ETL_Kafka_Zookeeper -down-> Zookeeper: butch данных для записи
+Kafka --> Extract: данные о событииях
+Extract --> Transform: подготовка данных
+Transform --> Load: подготовktyysq batch данных
+Load --> Distributed1_3: batch данных для записи
+
+
 
 
 
