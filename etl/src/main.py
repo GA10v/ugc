@@ -5,7 +5,7 @@ from time import sleep
 from confluent_kafka import KafkaError, KafkaException
 
 from core.config import settings
-from models.event import EventKafka
+from models.event import EventKafka, RatingEvent, ViewsEvent
 from services.extracter.consumer import KafkaConsumerETL
 from services.loader.ch_client import ClickHouseClientETL
 from services.transformer.transformer import TramsformerETL
@@ -38,8 +38,16 @@ def main(consumer: KafkaConsumerETL, client: ClickHouseClientETL, transformer: T
                         )
                     elif message.error():
                         raise KafkaException(message.error())
-                print(json.loads(message.value()))
-                events.append(EventKafka(**json.loads(message.value())))
+
+                _event = json.loads(message.value())
+                event_type = _event.get('event_type')
+
+                if event_type == 'rating':
+                    event_payload = RatingEvent(**_event.get('event_payload'))
+                if event_type == 'views':
+                    event_payload = ViewsEvent(**_event.get('event_payload'))
+
+                events.append(EventKafka(event_type=event_type, event_payload=event_payload))
 
             if events:
                 events = transformer.transform(events)

@@ -98,6 +98,7 @@ services:
     restart: always
     volumes:
       - ./ch_conf/node2:/etc/clickhouse-server
+      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -122,6 +123,7 @@ services:
     restart: always
     volumes:
       - ./ch_conf/node4:/etc/clickhouse-server
+      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
 
@@ -146,5 +148,6 @@ services:
     restart: always
     volumes:
       - ./ch_conf/node6:/etc/clickhouse-server
+      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper

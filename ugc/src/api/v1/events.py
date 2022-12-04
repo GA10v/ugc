@@ -1,14 +1,13 @@
 from http import HTTPStatus
-from uuid import UUID
 
 from api.v1.utils import EventEnum
 from fastapi import APIRouter, Depends, HTTPException, Response
 from kafka.errors import KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableError
+from utils import auth
 
 from core.config import settings
 from models.events import Event
-from services.broker.produser import KafkaProducer, get_producer
-from utils import auth
+from services.broker.producer import KafkaProducer, get_producer
 
 router = APIRouter()
 auth_handler = auth.AuthHandler()
@@ -24,7 +23,7 @@ kafka_exceptions = (KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableErr
     response_description='Событие',
 )
 async def kafka_produce(
-    movie_id: str | UUID,
+    movie_id: str,
     event_type: EventEnum,
     event: int,
     producer: KafkaProducer = Depends(get_producer),

@@ -11,8 +11,7 @@ class BaseConfig(BaseSettings):
 
 class ClickhouseSettings(BaseConfig):
     HOST: str = 'localhost'
-    MASTER_PORT: int = 9000
-    SUB: list[list[str, int]] = [['localhost', 9001], ['localhost', 9002]]
+    PORT: int = 9000
     USER: str = None
     PASSWORD: str = None
     CLUSTER: str = 'company_cluster'
@@ -23,7 +22,7 @@ class ClickhouseSettings(BaseConfig):
     FIELDS: dict[str, str] = {
         'user_id': 'String',
         'movie_id': 'String',
-        'evetn': 'UInt64',
+        'event': 'UInt64',
         'event_time': 'DateTime DEFAULT now()',
     }
 
@@ -31,8 +30,7 @@ class ClickhouseSettings(BaseConfig):
     def client_conf(self):
         return {
             'host': self.HOST,
-            'port': self.MASTER_PORT,
-            'sub': self.SUB,
+            'port': self.PORT,
             'db': self.DATABASE,
             'tables': self.TABLES,
             'fields': self.FIELDS,
@@ -63,9 +61,17 @@ class KafkaSettings(BaseSettings):
         env_prefix = 'KAFKA_'
 
 
+class TransformSettings(BaseConfig):
+    batches: dict = {
+        'views': [],
+        'rating': [],
+    }
+
+
 class ProjectSettings(BaseConfig):
     ch: ClickhouseSettings = ClickhouseSettings()
     kafka: KafkaSettings = KafkaSettings()
+    transform: TransformSettings = TransformSettings()
 
 
 settings = ProjectSettings()

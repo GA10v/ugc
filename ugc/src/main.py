@@ -9,7 +9,7 @@ from middleware.auth import auth_middleware
 
 from core.config import settings
 from core.logger import LOGGING
-from services.broker import produser
+from services.broker import producer
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,13 +21,13 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup_event():
-    produser.aioproducer = AIOKafkaProducer(**settings.kafka.producer_conf)
-    await produser.aioproducer.start()
+    producer.aioproducer = AIOKafkaProducer(**settings.kafka.producer_conf)
+    await producer.aioproducer.start()
 
 
 @app.on_event('shutdown')
 async def shutdown_event():
-    await produser.aioproducer.stop()
+    await producer.aioproducer.stop()
 
 
 if not settings.debug.DEBUG:
