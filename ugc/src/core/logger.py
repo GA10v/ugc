@@ -62,6 +62,6 @@ LOGGING = {
 logging.config.dictConfig(LOGGING)
 
 
-def logger(_name_: str) -> logging:
+def get_logger(_name_: str) -> logging:
     """Логгер."""
     return logging.getLogger(_name_)
