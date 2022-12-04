@@ -49,11 +49,24 @@ class JWTSettings(BaseConfig):
         env_prefix = 'JWT_'
 
 
+class FastapiSettings(BaseConfig):
+    HOST: str = 'localhost'
+    PORT: int = 8000
+    PREFIX: str = '/ugc_api/v1/event'
+
+    class Config:
+        env_prefix = 'FASTAPI_'
+
+
 class PermissionSettings(Enum):
     User = 0
     Subscriber = 1
     Vip_subscriber = 2
     Moderator = 3
+
+
+class DebugSettings(BaseConfig):
+    DEBUG: bool = True
 
 
 class ProjectSettings(BaseConfig):
@@ -62,6 +75,8 @@ class ProjectSettings(BaseConfig):
     permission = PermissionSettings
     jwt: JWTSettings = JWTSettings()
     kafka: KafkaSettings = KafkaSettings()
+    fastapi: FastapiSettings = FastapiSettings()
+    debug: DebugSettings = DebugSettings()
 
 
 settings = ProjectSettings()

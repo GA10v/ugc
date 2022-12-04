@@ -16,12 +16,14 @@ def auth_middleware(app: FastAPI):
         if claims.get('is_super'):
             return await call_next(request)
 
-        if 'http://fastapi:8000/ugc_api/v1/event/produce' in str(request.url):
+        produce_path = f'{settings.fastapi.HOST}:{settings.fastapi.PORT}/{settings.fastapi.PREFIX}/produce'
+        if produce_path in str(request.url):
             if settings.permission.User in claims.get('permissions'):
                 return await call_next(request)
             return Response('Permission denied', HTTPStatus.FORBIDDEN)
 
-        if 'http://fastapi:8000/ugc_api/v1/event/batch-produce' in str(request.url):
+        batch_produce_path = f'{settings.fastapi.HOST}:{settings.fastapi.PORT}{settings.fastapi.PREFIX}/batch-produce'
+        if batch_produce_path in str(request.url):
             if settings.permission.Moderator in claims.get('permissions'):
                 return await call_next(request)
             return Response('Permission denied', HTTPStatus.FORBIDDEN)

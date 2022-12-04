@@ -1,16 +1,14 @@
-import asyncio
 import logging
 
 import uvicorn
 from aiokafka import AIOKafkaProducer
 from api.v1 import events
-from core import kafka
 from core.config import settings
 from core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from middleware.auth import auth_middleware
-from services.broker import produser
+from services.broker import producer
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -22,18 +20,19 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup_event():
-    produser.aioproducer = AIOKafkaProducer(**settings.kafka.producer_conf)
-    await produser.aioproducer.start()
+    producer.aioproducer = AIOKafkaProducer(**settings.kafka.producer_conf)
+    await producer.aioproducer.start()
 
 
 @app.on_event('shutdown')
 async def shutdown_event():
-    await produser.aioproducer.stop()
+    await producer.aioproducer.stop()
 
 
-# auth_middleware(app=app)
+if not settings.debug.DEBUG:
+    auth_middleware(app=app)
 
-app.include_router(events.router, prefix='/ugc_api/v1/event', tags=['events'])
+app.include_router(events.router, prefix=settings.fastapi.PREFIX, tags=['events'])
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8001, log_config=LOGGING, log_level=logging.DEBUG)
