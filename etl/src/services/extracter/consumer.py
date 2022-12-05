@@ -1,5 +1,6 @@
 import backoff
 from confluent_kafka import Consumer, KafkaError
+
 from services.extracter.protocol import ExtracterProtocol
 
 
@@ -15,10 +16,10 @@ class KafkaConsumerETL(ExtracterProtocol):
             'bootstrap.servers': host,
             'group.id': group_id,
             'auto.offset.reset': 'earliest',
+            'enable.auto.commit': False,
         }
         self.topics = topics
         self.batch_size = batch_size
-        self.consumer = self._get_consumer()
 
     @backoff.on_exception(backoff.expo, KafkaError)
     def get_consumer(self) -> Consumer:
