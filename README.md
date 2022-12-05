@@ -20,5 +20,5 @@
 ### Запуск приложения в docker
 1. Создать файл конфигурации ```.env``` в корне проекта и заполнить его согласно ```example.env ```
 2. Запустить контейнер командой
-    ```$ docker-compose -f docker-compose up ```
+    ```$ docker-compose -f docker-compose.prod.yml up -d --build ```
 3. Перейти к документации по url: ```http://localhost:8001/api/openapi```
