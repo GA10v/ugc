@@ -1,4 +1,5 @@
 import re
+from http import HTTPStatus
 from typing import Optional
 
 import jwt
@@ -26,9 +27,9 @@ class AuthHandler:
                 },
             }
         except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail='Signature has expired')
+            raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail='Signature has expired')
         except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail='Token is invalid')
+            raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail='Token is invalid')
 
     async def auth_wrapper(self, auth: HTTPAuthorizationCredentials = Security(security)):
         return await self.decode_token(auth.credentials)
