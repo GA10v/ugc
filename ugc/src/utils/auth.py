@@ -3,11 +3,12 @@ from http import HTTPStatus
 from typing import Optional
 
 import jwt
-from core.config import settings
-from core.logger import get_logger
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import DecodeError, ExpiredSignatureError
+
+from core.config import settings
+from core.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -70,4 +71,4 @@ def parse_header(auth_header) -> dict:
             'claims': decoded_jwt.additional_claims,
         }
     except (DecodeError, ExpiredSignatureError) as ex:
-        logger.exception('Ошибка при проверке access_token: \n %s', str(ex))
+        logger.exception('Error while decode access_token: \n %s', str(ex))

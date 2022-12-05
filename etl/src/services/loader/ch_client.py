@@ -2,6 +2,7 @@ from datetime import datetime
 
 import backoff
 from clickhouse_driver import Client, errors
+
 from core.config import settings
 from core.logger import get_logger
 from models.event import events
@@ -47,7 +48,7 @@ class ClickHouseClientETL(LoaderProtocol):
             return self.client.execute(command, values)
         except errors.ServerException as ex:
             if ex.code != 57:
-                logger.error('Ошибка запроса в ClickHouse: \n %s', str(ex))
+                logger.error('ClickHouse: bad request \n %s', str(ex))
                 raise ex
 
     def _create_db(self, db: str) -> None:
@@ -97,7 +98,7 @@ class ClickHouseClientETL(LoaderProtocol):
     def init_db(self) -> None:
         """Создание БД и Таблиц в ClickHouse."""
 
-        logger.info('Кластер: Запуск создания БД и дистрибутивных таблиц')
+        logger.info('Cluster: init db')
         self._create_db(self.db)
         for db in self.databases:
             self._create_db(db)
@@ -122,4 +123,4 @@ class ClickHouseClientETL(LoaderProtocol):
             fields = ', '.join(_fields)
             values = ', '.join(_values)
             self._execute(f'INSERT INTO {self.db}.{event_type} ({fields}) VALUES {values}')
-            logger.info('Запись данных о событии [%s] в ClickHouse', event_type)
+            logger.info('ClickHouse: event [%s] loaded', event_type)
