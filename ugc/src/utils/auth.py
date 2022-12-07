@@ -1,12 +1,14 @@
 import re
+from http import HTTPStatus
 from typing import Optional
 
 import jwt
-from core.config import settings
-from core.logger import get_logger
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import DecodeError, ExpiredSignatureError
+
+from core.config import settings
+from core.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -26,9 +28,9 @@ class AuthHandler:
                 },
             }
         except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail='Signature has expired')
+            raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail='Signature has expired')
         except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail='Token is invalid')
+            raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail='Token is invalid')
 
     async def auth_wrapper(self, auth: HTTPAuthorizationCredentials = Security(security)):
         return await self.decode_token(auth.credentials)
@@ -69,4 +71,4 @@ def parse_header(auth_header) -> dict:
             'claims': decoded_jwt.additional_claims,
         }
     except (DecodeError, ExpiredSignatureError) as ex:
-        logger.exception('Ошибка при проверке access_token: \n %s', str(ex))
+        logger.exception('Error while decode access_token: \n %s', str(ex))
