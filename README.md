@@ -22,3 +22,8 @@
 2. Запустить контейнер командой
     ```$ docker-compose -f docker-compose.prod.yml up -d --build ```
 3. Перейти к документации по url: ```http://localhost:8001/api/openapi```
+
+### Запуск тестов
+1. Создать файл конфигурации ```.env``` в корне проекта и заполнить его согласно ```example.env ```
+2. Запустить контейнер командой
+    ```$ docker-compose -f docker-compose.test.yml up -d --build```
