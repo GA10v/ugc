@@ -15,7 +15,7 @@ kafka_exceptions = (KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableErr
 
 
 @router.post(
-    path='produce/{movie_id}/{event_type}',
+    path='/produce/{movie_id}/{event_type}',
     response_model=Event,
     summary='Отправка события.',
     description='Отправка события в топик kafka',
@@ -38,7 +38,7 @@ async def kafka_produce(
 
 
 @router.post(
-    path='batch-produce',
+    path='/batch-produce',
     summary='Отправка пачки событий.',
     description='Отправка пачки событий в топик kafka',
     response_description='Пачка событий',
@@ -46,9 +46,12 @@ async def kafka_produce(
 async def kafka_batch_produce(
     batch_size: int,
     producer: KafkaProducer = Depends(get_producer),
+    _user: dict = Depends(auth_handler.auth_wrapper),
 ):
-    try:
-        await producer.batch_produce(batch_size)
-    except kafka_exceptions:
-        return HTTPException(detail='Storage is unavailable', status_code=HTTPStatus.BAD_GATEWAY)
-    return {'msg': 'Events saved'}
+    if (settings.permission.Moderator.value in _user['claims'].get('permissions')) or _user['claims'].get('is_super'):
+        try:
+            await producer.batch_produce(batch_size)
+        except kafka_exceptions:
+            return HTTPException(detail='Storage is unavailable', status_code=HTTPStatus.BAD_GATEWAY)
+        return {'msg': 'Events saved'}
+    return Response('Permission denied', HTTPStatus.FORBIDDEN)
