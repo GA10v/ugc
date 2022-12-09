@@ -1,169 +1,163 @@
-version: '3'
-
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+  mongors1n1:
+    container_name: mongors1n1
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
     ports:
-      - "22181:2181"
-    restart: always
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
-    ports:
-      - "29092:29092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    restart: always
-
-  init-kafka:
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - kafka
-    entrypoint: [ '/bin/sh', '-c' ]
-    command: |
-      "
-      kafka-topics --bootstrap-server kafka:29092 --list
-      echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic views --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rating --replication-factor 1 --partitions 1
-      echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka:29092 --list
-      "
-
-  nginx:
-    container_name: nginx
-    image: nginx:1.23
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/configs:/etc/nginx/conf.d:ro
-    depends_on:
-      - fastapi
-    ports:
-      # - "80:80"
-      - "443:443"
-    restart: always
-
-  fastapi:
-    build: .
-    container_name: ugc_fastapi
+      - 27017:27017
     expose:
-      - "8001"
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_data1:/data/db
+      - ./mongo_cnf:/scripts
+
+  mongors1n2:
+    container_name: mongors1n2
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
     ports:
-      - "8001:8001"
-    env_file:
-      - .env
-    depends_on:
-      - zookeeper
-      - kafka
-    restart: on-failure
+      - 27027:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_data2:/data/db
+      - ./mongo_cnf:/scripts
 
-  etl:
-    container_name: ugc_etl
-    build:
-      context: ./etl
-      dockerfile: ./Dockerfile
-    # volumes:
-    #   - etl_data:/src/data
-    env_file:
-      - .env
-    depends_on:
-      - fastapi
-      - kafka
-      - init-kafka
-      - clickhouse-node1
-      - clickhouse-node2
-      - clickhouse-node3
-      - clickhouse-node4
-      - clickhouse-node5
-      - clickhouse-node6
-    restart: always
-
-  clickhouse-zookeeper:
-    image: zookeeper:3.5
-    container_name: clickhouse-zookeeper
-    hostname: clickhouse-zookeeper
-    restart: always
-
-  clickhouse-node1:
-    image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node1
-    hostname: clickhouse-node1
-    restart: always
+  mongors1n3:
+    container_name: mongors1n3
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
     ports:
-      - "8123:8123"
-      - "9000:9000"
+      - 27037:27017
+    expose:
+      - "27017"
     volumes:
-      - ./ch_conf/node1:/etc/clickhouse-server
-      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
-    depends_on:
-      - zookeeper
-
-  clickhouse-node2:
-    image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node2
-    hostname: clickhouse-node2
-    restart: always
-    volumes:
-      - ./ch_conf/node2:/etc/clickhouse-server
-      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
-    depends_on:
-      - zookeeper
-
-  clickhouse-node3:
-    image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node3
-    hostname: clickhouse-node3
-    restart: always
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_data3:/data/db
+      - ./mongo_cnf:/scripts
+  mongors2n1:
+    container_name: mongors2n1
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
     ports:
-      - "8124:8123"
-      - "9001:9000"
+      - 27047:27017
+    expose:
+      - "27017"
     volumes:
-      - ./ch_conf/node3:/etc/clickhouse-server
-      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
-    depends_on:
-      - zookeeper
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_data4:/data/db
+      - ./mongo_cnf:/scripts
 
-  clickhouse-node4:
-    image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node4
-    hostname: clickhouse-node4
-    restart: always
-    volumes:
-      - ./ch_conf/node4:/etc/clickhouse-server
-      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
-    depends_on:
-      - zookeeper
-
-  clickhouse-node5:
-    image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node5
-    hostname: clickhouse-node5
-    restart: always
+  mongors2n2:
+    container_name: mongors2n2
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
     ports:
-      - "8125:8123"
-      - "9002:9000"
+      - 27057:27017
+    expose:
+      - "27017"
     volumes:
-      - ./ch_conf/node5:/etc/clickhouse-server
-      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
-    depends_on:
-      - zookeeper
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_data5:/data/db
+      - ./mongo_cnf:/scripts
 
-  clickhouse-node6:
-    image: yandex/clickhouse-server:20.4
-    container_name: clickhouse-node6
-    hostname: clickhouse-node6
-    restart: always
+  mongors2n3:
+    container_name: mongors2n3
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27067:27017
+    expose:
+      - "27017"
     volumes:
-      - ./ch_conf/node6:/etc/clickhouse-server
-      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_data6:/data/db
+      - ./mongo_cnf:/scripts
+
+  mongocfg1:
+    container_name: mongocfg1
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_config1:/data/db
+      - ./mongo_cnf:/scripts
+
+  mongocfg2:
+    container_name: mongocfg2
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_config2:/data/db
+      - ./mongo_cnf:/scripts
+
+  mongocfg3:
+    container_name: mongocfg3
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mongo_cluster_config3:/data/db
+      - ./mongo_cnf:/scripts
+
+  mongos1:
+    container_name: mongos1
+    image: mongo
     depends_on:
-      - zookeeper
+      - mongocfg1
+      - mongocfg2
+      - mongors1n1
+      - mongors1n2
+      - mongors1n3
+      - mongors2n1
+      - mongors2n2
+      - mongors2n3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017
+    ports:
+      - 27019:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./mongo_cnf:/scripts
+
+  mongos2:
+    container_name: mongos2
+    image: mongo
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongors1n1
+      - mongors1n2
+      - mongors1n3
+      - mongors2n1
+      - mongors2n2
+      - mongors2n3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017
+    ports:
+      - 27020:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./mongo_cnf:/scripts
+
+volumes:
+  mongo_cluster_data1:
+  mongo_cluster_data2:
+  mongo_cluster_data3:
+  mongo_cluster_data4:
+  mongo_cluster_data5:
+  mongo_cluster_data6:
+  mongo_cluster_config1:
+  mongo_cluster_config2:
+  mongo_cluster_config3:
