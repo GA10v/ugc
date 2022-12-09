@@ -10,34 +10,17 @@ logging_config.dictConfig(LOGGING)
 
 class BaseConfig(BaseSettings):
     class Config:
-        env_file = Path(Path(__file__).parent.parent.parent.parent, '../../../.env')
+        env_file = Path(Path(__file__).parent.parent.parent.parent, '.env')
         env_file_encoding = 'utf-8'
 
 
-class KafkaSettings(BaseConfig):
-    BOOTSTRAP_SERVERS: str = 'localhost:9093'
-    CONSUMER_HOST: str = 'localhost:29092'
-    TOPICS: list[str] = ['views', 'rating']
-    CONSUMER_GROUP: str = 'group-id'
-    BATCH_SIZE: int = 10
-
-    @property
-    def producer_conf(self):
-        return {
-            'bootstrap_servers': self.BOOTSTRAP_SERVERS,
-        }
-
-    @property
-    def consumer_conf(self):
-        return {
-            'host': self.CONSUMER_HOST,
-            'topics': self.TOPICS,
-            'group_id': self.CONSUMER_GROUP,
-            'batch_size': self.BATCH_SIZE,
-        }
+class MongoSettings(BaseConfig):
+    HOST: str = 'mongos1'
+    PORT: int = 27017
+    DB: str = 'ugc_db'
 
     class Config:
-        env_prefix = 'KAFKA_'
+        env_prefix = 'MONGO_'
 
 
 class JWTSettings(BaseConfig):
@@ -51,7 +34,7 @@ class JWTSettings(BaseConfig):
 
 class FastapiSettings(BaseConfig):
     HOST: str = 'localhost'
-    PORT: int = 8000
+    PORT: int = 8002
     PREFIX: str = '/ugc_api/v1/event'
 
     class Config:
@@ -70,11 +53,11 @@ class DebugSettings(BaseConfig):
 
 
 class ProjectSettings(BaseConfig):
-    PROJECT_NAME: str = 'UGC'
+    PROJECT_NAME: str = 'UGC_2'
     BASE_DIR = Path(__file__).parent.parent
     permission = PermissionSettings
     jwt: JWTSettings = JWTSettings()
-    kafka: KafkaSettings = KafkaSettings()
+    mongo: MongoSettings = MongoSettings()
     fastapi: FastapiSettings = FastapiSettings()
     debug: DebugSettings = DebugSettings()
 
