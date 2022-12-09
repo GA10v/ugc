@@ -10,7 +10,7 @@ logging_config.dictConfig(LOGGING)
 
 class BaseConfig(BaseSettings):
     class Config:
-        env_file = Path(Path(__file__).parent.parent.parent.parent, '../../../.env')
+        env_file = Path(Path(__file__).parent.parent.parent.parent, '.env')
         env_file_encoding = 'utf-8'
 
 
