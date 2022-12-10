@@ -68,13 +68,11 @@ class BaseBenchmark:
         self.storage.insert_bath(test_even_data)
 
     @timer('Загрузка батчами')
-    def test_insert(self, batch: int, add_searchable_data: bool = False) -> None:
+    def test_insert(self, batch: int) -> None:
         fake_even_data = self._generate_test_data(batch)
         self.storage.insert_bath(fake_even_data)
-
-        if add_searchable_data:
-            fake_even_data = self._generate_searchable_data()
-            self.storage.insert_bath(fake_even_data)
+        print('====' * 10)
+        print(f'- Batch size: {batch} items;')
 
     @timer('Поиск фильма')
     def test_select(self, storage: AbsEventStorage) -> None:
