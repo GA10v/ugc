@@ -12,6 +12,17 @@ class ClickHouseSettings(BaseSettings):
     REPLICA_DB: str = 'replica'
 
 
+class MongoSettings(BaseSettings):
+    HOST: str = 'localhost'
+    PORT: int = 27017
+    DATABASE: str = 'EventDb'
+    COLLECTION: str = 'EventCollection'
+
+    @property
+    def url(self):
+        return f'mongodb://{self.HOST}:{self.PORT}/?directConnection=true'
+
+
 class FieldsSettings(BaseSettings):
     FIELDS: dict[str, str] = {
         'user_id': 'String',
@@ -26,14 +37,13 @@ class FieldsSettings(BaseSettings):
 class TestSettings(BaseSettings):
     TABLE: str = 'reviews'
     UUID: str = '4796fe00-fe9c-4def-a471-a9a4d448b60d'
-    BATCHES: list[int] = [1, 10, 100, 1000, 10000]
-    STRESS_SIZE: int = 1000000
 
 
 class BenchmarkSettings(BaseSettings):
     clickhouse: ClickHouseSettings = ClickHouseSettings()
     fields: FieldsSettings = FieldsSettings()
     test_data: TestSettings = TestSettings()
+    mongo: MongoSettings = MongoSettings()
 
 
 settings = BenchmarkSettings()

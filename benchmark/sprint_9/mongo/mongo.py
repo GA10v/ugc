@@ -1,22 +1,21 @@
-from uuid import UUID
-
-from base_benchmark import AbsEventStorage, BaseBenchmark
 from pymongo import MongoClient
+from utils.base_benchmark import AbsEventStorage, BaseBenchmark
+from utils.settings import settings
 
 
 class MongoStorage(AbsEventStorage):
     def __init__(self):
-        client = MongoClient('mongodb://127.0.0.1:27017/?directConnection=true')['EventDb']
-        self.collection = client.get_collection('EventCollection')
+        client = MongoClient(settings.mongo.url)[settings.mongo.DATABASE]
+        self.collection = client.get_collection(settings.mongo.COLLECTION)
 
     def insert_bath(self, data: list) -> None:
         self.collection.insert_many(data)
 
-    def select_movie(self, movie_id: UUID) -> None:
+    def select_movie(self, movie_id: str) -> None:
         film = self.collection.find_one({'movie_id': movie_id})
         print(film)
 
-    def get_number_record(self, movie_id: UUID) -> int:
+    def get_number_record(self, movie_id: str) -> int:
         return len([film for film in self.collection.find({'movie_id': movie_id})])
 
     def clear_records(self) -> None:
@@ -32,10 +31,11 @@ if __name__ == '__main__':
     benchmark.test_insert(10)
     benchmark.test_insert(100)
     benchmark.test_insert(1000)
-    benchmark.test_insert(10000, add_searchable_data=True)
+    benchmark.test_insert(10000)
 
     # Tecт 2: Тестирование поиска данных о событиях. (< 15_000 записей в таблице)
 
+    benchmark.insert_searchable_data()
     benchmark.test_select(storage)
 
     # Tecт 3: Тестирование вставки батча в 1_000_000 записей. (< 15_000 записей в таблице).
