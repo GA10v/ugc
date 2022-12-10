@@ -3,9 +3,9 @@ from datetime import datetime
 from random import choice, randint
 from uuid import UUID, uuid4
 
-from clickhouse.utils.decorators import timer
-from clickhouse.utils.models import MovieRating
-from clickhouse.utils.settings import settings
+from utils.decorators import timer
+from utils.models import MovieRating
+from utils.settings import settings
 
 
 class AbsEventStorage(ABC):
@@ -48,7 +48,7 @@ class BaseBenchmark:
         return MovieRating(**_event).dict()
 
     @staticmethod
-    def _generate_searchable_data() -> [MovieRating.dict]:
+    def _generate_searchable_data() -> list[MovieRating.dict]:
         _event = {
             'user_id': str(uuid4()),
             'movie_id': settings.test_data.UUID,
@@ -62,6 +62,10 @@ class BaseBenchmark:
         movie_size = 10
         movies = [settings.test_data.UUID for _ in range(movie_size)]
         return [cls._get_fake_event(user_id=str(uuid4()), movie_id=choice(movies)) for _ in range(batch_size)]
+
+    def insert_searchable_data(self) -> None:
+        test_even_data = self._generate_searchable_data()
+        self.storage.insert_bath(test_even_data)
 
     @timer('Загрузка батчами')
     def test_insert(self, batch: int, add_searchable_data: bool = False) -> None:
