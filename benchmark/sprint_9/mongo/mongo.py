@@ -1,12 +1,15 @@
+
 from pymongo import MongoClient
 from utils.base_benchmark import AbsEventStorage, BaseBenchmark
 from utils.settings import settings
+
 
 
 class MongoStorage(AbsEventStorage):
     def __init__(self):
         client = MongoClient(settings.mongo.url)[settings.mongo.DATABASE]
         self.collection = client.get_collection(settings.mongo.COLLECTION)
+
 
     def insert_bath(self, data: list) -> None:
         self.collection.insert_many(data)
