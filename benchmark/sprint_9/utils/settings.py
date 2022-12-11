@@ -14,13 +14,14 @@ class ClickHouseSettings(BaseSettings):
 
 class MongoSettings(BaseSettings):
     HOST: str = 'localhost'
-    PORT: int = 27017
+    PORT_mongos_1: int = 27019
+    PORT_mongos_2: int = 27020
     DATABASE: str = 'EventDb'
     COLLECTION: str = 'EventCollection'
 
     @property
     def url(self):
-        return f'mongodb://{self.HOST}:{self.PORT}/?directConnection=true'
+        return f'mongodb://{self.HOST}:{self.PORT_mongos_1},{self.HOST}:{self.PORT_mongos_2}'
 
 
 class FieldsSettings(BaseSettings):
