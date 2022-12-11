@@ -1,13 +1,36 @@
 from datetime import datetime
 
 from clickhouse_driver import Client
-from utils.models import MovieRating
+from utils.base_benchmark import AbsEventStorage
 from utils.settings import settings
 
 
-class ClickhouseClient:
+class CHStorage(AbsEventStorage):
     def __init__(self, host: str) -> None:
         self.client = Client(host=host)
+
+    def insert_bath(self, data: list) -> None:
+        _fields = list(data[0].keys())
+        _values = []
+        for item in data:
+            row = ', '.join([self._correct_insert_values(item.get(field)) for field in _fields])
+            _values.append(f'({row})')
+        fields = ', '.join(_fields)
+        values = ', '.join(_values)
+        command = f'INSERT INTO {settings.test_data.TABLE} ({fields}) VALUES {values}'
+        self.client.execute(command)
+
+    def select_movie(self, movie_id: str) -> None:
+        command = f"SELECT 'user_id', 'rating' FROM {settings.test_data.TABLE} WHERE movie_id = '{movie_id}'"
+        return self.client.execute(command)
+
+    def get_number_record(self, movie_id: str) -> int:
+        command = f'SELECT COUNT(*) from {settings.test_data.TABLE}'
+        return self.client.execute(command)[0][0]
+
+    def clear_records(self) -> None:
+        command = f'DROP TABLE IF EXISTS {settings.test_data.TABLE}'
+        return self.client.execute(command)
 
     @staticmethod
     def _correct_insert_values(item) -> str:
@@ -62,41 +85,3 @@ class ClickhouseClient:
             cluster=cluster,
             engine=f"Distributed({settings.clickhouse.CLUSTER_NAME}, '', {table_name}, rand())",
         )
-
-    def insert(self, table_name: str, data: list[MovieRating]) -> None:
-        """
-        Вставка данных в таблицу
-        :param table_name: название таблицы
-        :param data: сипсок событий
-        """
-
-        _fields = list(data[0].keys())
-        _values = []
-        for item in data:
-            row = ', '.join([self._correct_insert_values(item.get(field)) for field in _fields])
-            _values.append(f'({row})')
-
-        fields = ', '.join(_fields)
-        values = ', '.join(_values)
-        command = f'INSERT INTO {table_name} ({fields}) VALUES {values}'
-
-        self.client.execute(command)
-
-    def select(self, table_name: str, fields: list[str] = None, movie_id: str = None) -> list:
-        """
-        Получение данных из таблицы.
-        :param table_name: название таблицы
-        :param data: сипсок событий
-        param movie_id: UUID
-        """
-
-        if fields:
-            fields = ', '.join(fields)
-        else:
-            fields = '*'
-        command = f'SELECT {fields} FROM {table_name}'
-
-        if movie_id:
-            command += f" WHERE movie_id = '{movie_id}'"
-
-        return self.client.execute(command)
