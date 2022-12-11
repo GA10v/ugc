@@ -14,11 +14,11 @@ class AbsEventStorage(ABC):
         ...
 
     @abstractmethod
-    def select_movie(self, movie_id: UUID) -> None:
+    def select_movie(self, movie_id: str) -> None:
         ...
 
     @abstractmethod
-    def get_number_record(self, movie_id: UUID) -> int:
+    def get_number_record(self, movie_id: str) -> int:
         ...
 
     @abstractmethod
