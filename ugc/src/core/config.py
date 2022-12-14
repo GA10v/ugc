@@ -14,6 +14,20 @@ class BaseConfig(BaseSettings):
         env_file_encoding = 'utf-8'
 
 
+class MongoSettings(BaseConfig):
+    HOST: str = 'mongos1'
+    PORT: int = 27019
+    DB: str = 'ugc_db'
+    BOOKMARK: str = 'bookmark_collection'
+
+    @property
+    def uri(self):
+        return f'mongodb://{self.HOST}:{self.PORT}'
+
+    class Config:
+        env_prefix = 'MONGO_'
+
+
 class KafkaSettings(BaseConfig):
     BOOTSTRAP_SERVERS: str = 'localhost:9093'
     CONSUMER_HOST: str = 'localhost:29092'
@@ -52,7 +66,8 @@ class JWTSettings(BaseConfig):
 class FastapiSettings(BaseConfig):
     HOST: str = 'localhost'
     PORT: int = 8000
-    PREFIX: str = '/ugc_api/v1/event'
+    EVENT_PREFIX: str = '/ugc_api/v1/event'
+    BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
 
     class Config:
         env_prefix = 'FASTAPI_'
@@ -76,6 +91,7 @@ class ProjectSettings(BaseConfig):
     jwt: JWTSettings = JWTSettings()
     kafka: KafkaSettings = KafkaSettings()
     fastapi: FastapiSettings = FastapiSettings()
+    mongo: MongoSettings = MongoSettings()
     debug: DebugSettings = DebugSettings()
 
 
