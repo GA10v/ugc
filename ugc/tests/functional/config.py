@@ -1,30 +1,64 @@
-import json
-from functools import lru_cache
-from os import getenv
+from pathlib import Path
 
-from pydantic import BaseConfig
+from pydantic import BaseSettings
 
 
-class TestConfig(BaseConfig):
-    FASTAPI_HOST: str = getenv("FASTAPI_HOST")
-    FASTAPI_PORT: str = getenv("FASTAPI_PORT")
-    FASTAPI_PREFIX: str = getenv("FASTAPI_PREFIX")
-    JWT_SECRET_KEY: str = getenv("JWT_SECRET_KEY")
-    JWT_ALGORITHM: str = getenv("JWT_ALGORITHM")
-    KAFKA_TOPICS: list[str] = json.loads(getenv("KAFKA_TOPICS"))
+class BaseConfig(BaseSettings):
+    class Config:
+        env_file = Path(Path(__file__).parent.parent.parent.parent, '.env')
+        env_file_encoding = 'utf-8'
+
+
+class KafkaSettings(BaseConfig):
+    TOPICS: list[str] = ['views', 'rating']
+
+    class Config:
+        env_prefix = 'TEST_KAFKA_'
+
+
+class JWTSettings(BaseConfig):
+    SECRET_KEY: str = '245585dbb5cbe2f151742298d61d364880575bff0bdcbf4ae383f0180e7e47dd'
+    ALGORITHM: str = 'HS256'
+
+    class Config:
+        env_prefix = 'TEST_JWT_'
+
+
+class FastapiSettings(BaseConfig):
+    HOST: str = 'localhost'
+    PORT: int = 8000
+    EVENT_PREFIX: str = '/ugc_api/v1/event'
+    BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
 
     @property
     def service_url(self):
-        return f"http://{self.FASTAPI_HOST}:{self.FASTAPI_PORT}"
-
-    @property
-    def service_prefix(self):
-        return self.FASTAPI_PREFIX
+        return f'http://{self.HOST}:{self.PORT}'
 
     class Config:
-        frozen = True
+        env_prefix = 'TEST_FASTAPI_'
 
 
-@lru_cache()
-def get_config() -> TestConfig:
-    return TestConfig()
+class MongoSettings(BaseConfig):
+    HOST: str = 'mongos1'
+    PORT: int = 27019
+    DB: str = 'ugc_db'
+    BOOKMARK: str = 'test_collection'
+
+    @property
+    def uri(self):
+        return f'mongodb://{self.HOST}:{self.PORT}'
+
+    class Config:
+        env_prefix = 'TEST_MONGO_'
+
+
+class TestSettings(BaseConfig):
+    PROJECT_NAME: str = 'UGC'
+    BASE_DIR = Path(__file__).parent.parent
+    jwt: JWTSettings = JWTSettings()
+    kafka: KafkaSettings = KafkaSettings()
+    fastapi: FastapiSettings = FastapiSettings()
+    mongo: MongoSettings = MongoSettings()
+
+
+settings = TestSettings()
