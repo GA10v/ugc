@@ -38,18 +38,10 @@ class FastapiSettings(BaseConfig):
         env_prefix = 'TEST_FASTAPI_'
 
 
-class MongoSettings(BaseConfig):
-    HOST: str = 'mongos1'
-    PORT: int = 27019
-    DB: str = 'ugc_db'
-    BOOKMARK: str = 'test_collection'
-
-    @property
-    def uri(self):
-        return f'mongodb://{self.HOST}:{self.PORT}'
-
-    class Config:
-        env_prefix = 'TEST_MONGO_'
+class TestDataSettings(BaseConfig):
+    USER: str = '6c162475-c7ed-4461-9184-001ef3d9f264'
+    MOVIE_1: str = 'a5a8f573-3cee-4ccc-8a2b-91cb9f55250a'
+    MOVIE_2: str = '26e83050-29ef-4163-a99d-b546cac208f8'
 
 
 class TestSettings(BaseConfig):
@@ -58,7 +50,7 @@ class TestSettings(BaseConfig):
     jwt: JWTSettings = JWTSettings()
     kafka: KafkaSettings = KafkaSettings()
     fastapi: FastapiSettings = FastapiSettings()
-    mongo: MongoSettings = MongoSettings()
+    data: TestDataSettings = TestDataSettings()
 
 
 settings = TestSettings()

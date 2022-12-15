@@ -24,7 +24,7 @@ def event_loop():
 
 @pytest_asyncio.fixture(scope='session')
 def access_token():
-    data = {'sub': str(uuid.uuid4()), 'permissions': [], 'is_super': True}
+    data = {'sub': settings.data.USER, 'permissions': [], 'is_super': True}
     return jwt.encode(data, settings.jwt.SECRET_KEY, settings.jwt.ALGORITHM)
 
 
