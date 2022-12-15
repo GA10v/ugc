@@ -24,7 +24,7 @@ def data_two_bm():
 
 async def test_get_unauthorized(session):
     """Проверка доступа неавторизованного пользователя."""
-    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/get/'
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
     url = _url + settings.data.USER
     async with session.get(url) as response:
         assert response.status == HTTPStatus.FORBIDDEN
@@ -32,7 +32,7 @@ async def test_get_unauthorized(session):
 
 async def test_get_not_found(session, access_token):
     """Проверка поиска по несуществующему id."""
-    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/get/'
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
     headers = {'Authorization': 'Bearer ' + access_token}
 
     url = _url + 'wrong_user_id'
@@ -42,7 +42,7 @@ async def test_get_not_found(session, access_token):
 
 async def test_add_ok(session, access_token, data_one_bm, data_two_bm):
     """Проверка добавления закладок."""
-    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/add/'
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
     headers = {'Authorization': 'Bearer ' + access_token}
 
     url = _url + settings.data.MOVIE_1
@@ -60,7 +60,7 @@ async def test_add_ok(session, access_token, data_one_bm, data_two_bm):
 
 async def test_delete_ok(session, access_token, data_one_bm):
     """Проверка удаления закладок."""
-    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/delete/'
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
     headers = {'Authorization': 'Bearer ' + access_token}
 
     url = _url + settings.data.MOVIE_2
@@ -72,7 +72,7 @@ async def test_delete_ok(session, access_token, data_one_bm):
 
 async def test_get_ok(session, access_token, data_one_bm):
     """Проверка получения закладок."""
-    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/get/'
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
     headers = {'Authorization': 'Bearer ' + access_token}
 
     url = _url + settings.data.USER
@@ -82,7 +82,7 @@ async def test_get_ok(session, access_token, data_one_bm):
         assert body == data_one_bm
 
     # Удаление тестовых данных
-    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/delete/'
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
     url = _url + settings.data.MOVIE_1
     async with session.delete(url, headers=headers) as response:
         assert response.status == HTTPStatus.OK
