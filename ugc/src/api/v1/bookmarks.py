@@ -1,7 +1,6 @@
 from http import HTTPStatus
 from typing import Optional
 
-from api.v1.utils import NotFoundError
 from fastapi import APIRouter, Depends, HTTPException
 from models.bookmarks import BookmarksSchema
 from services.bookmarks.client import BookmarkService, get_bookmark_service
@@ -20,7 +19,7 @@ async def add_bookmark(
     movie_id: str,
     bookmark_service: BookmarkService = Depends(get_bookmark_service),
     _user: dict = Depends(auth_handler.auth_wrapper),
-) -> Optional[BookmarksSchema]:
+) -> BookmarksSchema:
     return await bookmark_service.add(movie_id=movie_id, user_id=_user.get('user_id'))
 
 
@@ -33,7 +32,7 @@ async def delete_bookmark(
     movie_id: str,
     bookmark_service: BookmarkService = Depends(get_bookmark_service),
     _user: dict = Depends(auth_handler.auth_wrapper),
-) -> Optional[BookmarksSchema]:
+) -> BookmarksSchema:
     return await bookmark_service.delete(movie_id=movie_id, user_id=_user.get('user_id'))
 
 
@@ -49,8 +48,7 @@ async def get_bookmark(
 ) -> Optional[BookmarksSchema]:
     if user_id == 'me':
         user_id = _user.get('user_id')
-    try:
-        _doc = await bookmark_service.get(user_id=user_id)
-    except NotFoundError:
-        return HTTPException(detail='Bookmarks not found', status_code=HTTPStatus.NOT_FOUND)
+    _doc = await bookmark_service.get(user_id=user_id)
+    if not _doc:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='User not found')
     return _doc

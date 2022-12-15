@@ -1,9 +1,11 @@
+from typing import Optional
+
 from core.config import settings
 from db.mongo import get_mongo
 from fastapi import Depends
 from models.bookmarks import BookmarksSchema
 from motor.motor_asyncio import AsyncIOMotorClient
-from services.bookmarks.protocol import BookmarkRepository, NotFoundError
+from services.bookmarks.protocol import BookmarkRepository
 
 
 class BookmarkService(BookmarkRepository):
@@ -35,7 +37,7 @@ class BookmarkService(BookmarkRepository):
         _response = await self.collection.find_one({'user_id': user_id})
         return BookmarksSchema(**_response)
 
-    async def get(self, user_id: str) -> BookmarksSchema:
+    async def get(self, user_id: str) -> Optional[BookmarksSchema]:
         """
         Возвращает документ.
         :param user_id: UUID пользователя
@@ -43,9 +45,9 @@ class BookmarkService(BookmarkRepository):
         :raises NotFoundError:
         """
         _response = await self.collection.find_one({'user_id': user_id})
-        if _response:
-            return BookmarksSchema(**_response)
-        raise NotFoundError
+        if _response is None:
+            return
+        return BookmarksSchema(**_response)
 
 
 def get_bookmark_service(mongo: AsyncIOMotorClient = Depends(get_mongo)) -> BookmarkService:

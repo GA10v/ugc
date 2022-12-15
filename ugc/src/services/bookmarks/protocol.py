@@ -1,10 +1,6 @@
-from typing import Protocol
+from typing import Optional, Protocol
 
 from services.bookmarks.layer_models import Bookmarks
-
-
-class NotFoundError(Exception):
-    ...
 
 
 class BookmarkRepository(Protocol):
@@ -14,8 +10,5 @@ class BookmarkRepository(Protocol):
     async def delete(self, *args, **kwargs) -> Bookmarks:
         ...
 
-    async def get(self, *args, **kwargs) -> Bookmarks:
-        """
-        :raises NotFoundError:
-        """
+    async def get(self, *args, **kwargs) -> Optional[Bookmarks]:
         ...
