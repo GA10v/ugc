@@ -2,7 +2,7 @@ import logging
 
 import uvicorn
 from aiokafka import AIOKafkaProducer
-from api.v1 import bookmarks, events
+from api.v1 import bookmarks, events, ratings
 from core.config import settings
 from core.logger import LOGGING
 from db import mongo
@@ -39,6 +39,7 @@ if not settings.debug.DEBUG:
 
 app.include_router(events.router, prefix=settings.fastapi.EVENT_PREFIX, tags=['events'])
 app.include_router(bookmarks.router, prefix=settings.fastapi.BOOKMARK_PREFIX, tags=['bookmarks'])
+app.include_router(ratings.router, prefix=settings.fastapi.RATING_PREFIX, tags=['ratings'])
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8001, log_config=LOGGING, log_level=logging.DEBUG)
