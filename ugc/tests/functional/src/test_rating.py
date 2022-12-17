@@ -75,6 +75,14 @@ def likes():
 
 
 @pytest.fixture
+def user_rating():
+    return {
+        'user_id': settings.data.USER,
+        'rating': settings.data.RATING_2,
+    }
+
+
+@pytest.fixture
 def access_token_user_2():
     data = {'sub': settings.data.USER_2, 'permissions': [], 'is_super': True}
     return jwt.encode(data, settings.jwt.SECRET_KEY, settings.jwt.ALGORITHM)
@@ -125,6 +133,18 @@ async def test_second_add_ok(session, access_token, rating_change):
         assert response.status == HTTPStatus.OK
         body = await response.json()
         assert body == rating_change
+
+
+async def test_get_one_ok(session, access_token, user_rating):
+    """Проверка получения оценки пользователя."""
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.RATING_PREFIX}/'
+    headers = {'Authorization': 'Bearer ' + access_token}
+
+    url = _url + f'{settings.data.MOVIE_1}/{settings.data.USER}'
+    async with session.get(url, headers=headers) as response:
+        assert response.status == HTTPStatus.OK
+        body = await response.json()
+        assert body == user_rating
 
 
 async def test_delete_ok(session, access_token, rating_delete):
