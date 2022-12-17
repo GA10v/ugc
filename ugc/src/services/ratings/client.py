@@ -3,7 +3,7 @@ from typing import Optional
 from core.config import settings
 from db.mongo import get_mongo
 from fastapi import Depends
-from models.ratings import LikesResponse, RatingSchema
+from models.ratings import LikesResponse, RatingSchema, UserRatingSchema
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import WriteError
 from services.ratings.protocol import RatingRepository
@@ -94,6 +94,21 @@ class RatingService(RatingRepository):
             'rating': _rating / count_critics,
         }
         return LikesResponse(**_response)
+
+    async def get_one(self, movie_id: str, user_id: str) -> Optional[UserRatingSchema]:
+        """
+        Возвращает оценку пользователя.
+        :param movie_id: UUID фильма
+        :param user_id: UUID пользователя
+        :return: UserRatingSchema
+        """
+        _doc = await self.collection.find_one(
+            {'movie_id': movie_id},
+            {'_id': 0, 'data': {'$elemMatch': {'user_id': user_id}}},
+        )
+        if _doc is None:
+            return
+        return UserRatingSchema(**_doc['data'][0])
 
 
 def get_rating_service(mongo: AsyncIOMotorClient = Depends(get_mongo)) -> RatingService:

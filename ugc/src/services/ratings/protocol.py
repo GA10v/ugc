@@ -1,6 +1,6 @@
 from typing import Optional, Protocol
 
-from services.ratings.layer_models import Likes, Rating
+from services.ratings.layer_models import Likes, Rating, UserRating
 
 
 class RatingRepository(Protocol):
@@ -11,4 +11,7 @@ class RatingRepository(Protocol):
         ...
 
     async def get(self, *args, **kwargs) -> Optional[Likes]:
+        ...
+
+    async def get_one(self, *args, **kwargs) -> Optional[UserRating]:
         ...

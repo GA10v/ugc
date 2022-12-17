@@ -51,3 +51,22 @@ async def get_rating(
     if not _doc:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Rating not found')
     return _doc
+
+
+@router.get(
+    path='/{movie_id}/{user_id}',
+    response_model=UserRatingSchema,
+    summary='Получить оценку.',
+)
+async def get_user_rating(
+    movie_id: str,
+    user_id: str,
+    rating_service: RatingService = Depends(get_rating_service),
+    _user: dict = Depends(auth_handler.auth_wrapper),
+) -> Optional[UserRatingSchema]:
+    if user_id == 'me':
+        user_id = _user.get('user_id')
+    _doc = await rating_service.get_one(movie_id=movie_id, user_id=user_id)
+    if not _doc:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Rating not found')
+    return _doc
