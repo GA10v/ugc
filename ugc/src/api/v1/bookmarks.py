@@ -11,7 +11,7 @@ auth_handler = auth.AuthHandler()
 
 
 @router.post(
-    path='/{movie_id}/',
+    path='/{movie_id}',
     response_model=BookmarksSchema,
     summary='Добавить закладку.',
 )
@@ -24,7 +24,7 @@ async def add_bookmark(
 
 
 @router.delete(
-    path='/{movie_id}/',
+    path='/{movie_id}',
     response_model=BookmarksSchema,
     summary='Удалить закладку.',
 )
