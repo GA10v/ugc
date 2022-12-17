@@ -142,6 +142,15 @@ class OAuthSettings(BaseConfig):
     }
 
 
+class LogingSettings(BaseConfig):
+    SENTRY_DSN: str = ''
+    LOGSTAH_HOST: str = 'logstash'
+    LOGSTAH_PORT: int = 5046
+
+    class Config:
+        env_prefix = 'LOGGING_'
+
+
 class ProjectSettings(BaseConfig):
     redis: RedisSettings = RedisSettings()
     postgres: PostgresSettings = PostgresSettings()
@@ -153,6 +162,7 @@ class ProjectSettings(BaseConfig):
     oauth: OAuthSettings = OAuthSettings()
     jaeger: JaegerSettings = JaegerSettings()
     rate_limit: RateLimitSettings = RateLimitSettings()
+    logging: LogingSettings = LogingSettings()
     enable_tracer: bool = False
 
 

@@ -1,11 +1,11 @@
 from enum import Enum
-from logging import config as logging_config
+# from logging import config as logging_config
 from pathlib import Path
 
-from core.logger import LOGGING
+# from core.logger import LOGGING
 from pydantic import BaseSettings
 
-logging_config.dictConfig(LOGGING)
+# logging_config.dictConfig(LOGGING)
 
 
 class BaseConfig(BaseSettings):
@@ -69,6 +69,15 @@ class DebugSettings(BaseConfig):
     DEBUG: bool = True
 
 
+class LogingSettings(BaseConfig):
+    SENTRY_DSN: str = ''
+    LOGSTAH_HOST: str = 'logstash'
+    LOGSTAH_PORT: int = 5044
+
+    class Config:
+        env_prefix = 'LOGGING_'
+
+
 class ProjectSettings(BaseConfig):
     PROJECT_NAME: str = 'UGC'
     BASE_DIR = Path(__file__).parent.parent
@@ -77,6 +86,7 @@ class ProjectSettings(BaseConfig):
     kafka: KafkaSettings = KafkaSettings()
     fastapi: FastapiSettings = FastapiSettings()
     debug: DebugSettings = DebugSettings()
+    logging: LogingSettings = LogingSettings()
 
 
 settings = ProjectSettings()
