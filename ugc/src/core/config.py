@@ -1,11 +1,6 @@
 from enum import Enum
-# from logging import config as logging_config
 from pathlib import Path
-
-# from core.logger import LOGGING
 from pydantic import BaseSettings
-
-# logging_config.dictConfig(LOGGING)
 
 
 class BaseConfig(BaseSettings):
