@@ -19,6 +19,8 @@ class MongoSettings(BaseConfig):
     PORT: int = 27019
     DB: str = 'ugc_db'
     BOOKMARK: str = 'bookmark_collection'
+    RATING: str = 'rating_collection'
+
 
     @property
     def uri(self):
@@ -68,6 +70,8 @@ class FastapiSettings(BaseConfig):
     PORT: int = 8000
     EVENT_PREFIX: str = '/ugc_api/v1/event'
     BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
+    RATING_PREFIX: str = '/ugc_api/v1/rating'
+
 
     class Config:
         env_prefix = 'FASTAPI_'

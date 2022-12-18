@@ -18,7 +18,7 @@ class BookmarkService(BookmarkRepository):
         Добавляет закладку.
         :param movie_id: UUID фильма
         :param user_id: UUID пользователя
-        :return: UserBookmarks
+        :return: BookmarksSchema
         """
         await self.collection.update_one({'user_id': user_id}, {'$addToSet': {'bookmarks': movie_id}}, upsert=True)
         # $addToSet - добавляет уникальный элемент в массив https://www.mongodb.com/docs/manual/reference/operator/update/addToSet/ # noqa: E501
@@ -31,7 +31,7 @@ class BookmarkService(BookmarkRepository):
         Удаляет закладку.
         :param movie_id: UUID фильма
         :param user_id: UUID пользователя
-        :return: UserBookmarks
+        :return: BookmarksSchema
         """
         await self.collection.update_one({'user_id': user_id}, {'$pull': {'bookmarks': movie_id}})
         _response = await self.collection.find_one({'user_id': user_id})
@@ -41,8 +41,7 @@ class BookmarkService(BookmarkRepository):
         """
         Возвращает документ.
         :param user_id: UUID пользователя
-        :return: UserBookmarks
-        :raises NotFoundError:
+        :return: BookmarksSchema | None
         """
         _response = await self.collection.find_one({'user_id': user_id})
         if _response is None:
