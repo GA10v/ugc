@@ -41,5 +41,6 @@ app.include_router(events.router, prefix=settings.fastapi.EVENT_PREFIX, tags=['e
 app.include_router(bookmarks.router, prefix=settings.fastapi.BOOKMARK_PREFIX, tags=['bookmarks'])
 app.include_router(ratings.router, prefix=settings.fastapi.RATING_PREFIX, tags=['ratings'])
 
+
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8001, log_config=LOGGING, log_level=logging.DEBUG)
