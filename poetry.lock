@@ -531,6 +531,19 @@ eradicate = ">=2.0,<3.0"
 flake8 = ">=3.5,<6"
 
 [[package]]
+name = "flake8-html"
+version = "0.4.3"
+description = "Generate HTML reports of flake8 violations"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+flake8 = ">=3.3.0"
+jinja2 = ">=3.1.0"
+pygments = ">=2.2.0"
+
+[[package]]
 name = "flake8-pie"
 version = "0.16.0"
 description = "A flake8 extension that implements misc. lints"
@@ -1890,8 +1903,7 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "19709de658243acf6abf5e7bb714768226a2cf978bafec988d96d42a9c4158e2"
-
+content-hash = "24bdfedda1c6c042382ed18642b10fa8882dc8da9a473eeefb9170c5443bc200"
 
 [metadata.files]
 aiohttp = [
@@ -2404,6 +2416,10 @@ flake8-comprehensions = [
 flake8-eradicate = [
     {file = "flake8-eradicate-1.4.0.tar.gz", hash = "sha256:3088cfd6717d1c9c6c3ac45ef2e5f5b6c7267f7504d5a74b781500e95cb9c7e1"},
     {file = "flake8_eradicate-1.4.0-py3-none-any.whl", hash = "sha256:e3bbd0871be358e908053c1ab728903c114f062ba596b4d40c852fd18f473d56"},
+]
+flake8-html = [
+    {file = "flake8-html-0.4.3.tar.gz", hash = "sha256:8b870299620cc4a06f73644a1b4d457799abeca1cc914c62ae71ec5bf65c79a5"},
+    {file = "flake8_html-0.4.3-py2.py3-none-any.whl", hash = "sha256:8f126748b1b0edd6cd39e87c6192df56e2f8655b0aa2bb00ffeac8cf27be4325"},
 ]
 flake8-pie = [
     {file = "flake8-pie-0.16.0.tar.gz", hash = "sha256:b8dcb7b92706fa33d05d92a4b3e49b7a9fd3f0041849166275b646ba50e515ba"},
