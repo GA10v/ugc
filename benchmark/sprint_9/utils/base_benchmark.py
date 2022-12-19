@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from random import choice, randint
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from utils.decorators import timer
 from utils.models import MovieRating
@@ -71,8 +71,8 @@ class BaseBenchmark:
     def test_insert(self, batch: int) -> None:
         fake_even_data = self._generate_test_data(batch)
         self.storage.insert_bath(fake_even_data)
-        print('====' * 10)
-        print(f'- Batch size: {batch} items;')
+        print('====' * 10)  # noqa: T201
+        print(f'- Batch size: {batch} items;')  # noqa: T201
 
     @timer('Поиск фильма')
     def test_select(self, storage: AbsEventStorage) -> None:

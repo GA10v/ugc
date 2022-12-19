@@ -1,8 +1,6 @@
-
 from pymongo import MongoClient
 from utils.base_benchmark import AbsEventStorage, BaseBenchmark
 from utils.settings import settings
-
 
 
 class MongoStorage(AbsEventStorage):
@@ -10,16 +8,15 @@ class MongoStorage(AbsEventStorage):
         client = MongoClient(settings.mongo.url)[settings.mongo.DATABASE]
         self.collection = client.get_collection(settings.mongo.COLLECTION)
 
-
     def insert_bath(self, data: list) -> None:
         self.collection.insert_many(data)
 
     def select_movie(self, movie_id: str) -> None:
         film = self.collection.find_one({'movie_id': movie_id})
-        print(film)
+        print(film)  # noqa: T201
 
     def get_number_record(self, movie_id: str) -> int:
-        return len([film for film in self.collection.find({'movie_id': movie_id})])
+        return len([film for film in self.collection.find({'movie_id': movie_id})])  # noqa: C416
 
     def clear_records(self) -> None:
         self.collection.drop()

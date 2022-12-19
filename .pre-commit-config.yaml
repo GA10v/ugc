@@ -10,18 +10,17 @@ repos:
     - id: black
       types: [python]
       args: [--config, ./pyproject.toml]
-      language_version: python3.8
 -   repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
     -   id: isort
         types: [ python ]
--   repo: https://gitlab.com/pycqa/flake8
+-   repo: https://github.com/pycqa/flake8
     rev: 4.0.1
     hooks:
     -   id: flake8
         exclude: migrations
-        args: [--config, ./.flake8]
+        args: [--config, ./.flake8, --format=html, --htmldir=data/]
         additional_dependencies:
           - flake8-bugbear
           - flake8-variables-names
@@ -32,4 +31,5 @@ repos:
           - flake8-eradicate
           - flake8-print
           - flake8-quotes
+          - flake8-html
           - dlint
