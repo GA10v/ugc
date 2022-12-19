@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/GA10v/ugc_sprint_1/actions/workflows/checks.yml/badge.svg?=main)](https://github.com/GA10v/ugc_sprint_1/actions/workflows/checks.yml)
+
 # Проектная работа 8 спринта
 
 Ссылка на [проект](https://github.com/GA10v/ugc_sprint_1)
