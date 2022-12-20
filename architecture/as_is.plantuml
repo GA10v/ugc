@@ -62,7 +62,7 @@ node Auth {
             component Google
     }
 
-Users <--> Auth_Service: работа с данными пользователей 
+Users <--> Auth_Service: работа с данными пользователей
 Auth_Service <--> OAuth2: авторизация через соц.сети
 Tracer <-> Auth_Service: middleware
 }

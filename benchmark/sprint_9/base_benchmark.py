@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from uuid import uuid4, UUID
 from random import choice, randint
+from uuid import UUID, uuid4
 
-from clickhouse.utils.settings import settings
 from clickhouse.utils.decorators import timer
 from clickhouse.utils.models import MovieRating
+from clickhouse.utils.settings import settings
 
 
 class AbsEventStorage(ABC):
@@ -27,7 +27,6 @@ class AbsEventStorage(ABC):
 
 
 class BaseBenchmark:
-
     def __init__(self, storage: AbsEventStorage):
         self.storage = storage
         self.storage.clear_records()
