@@ -1,8 +1,9 @@
 import json
 import logging
-import logstash
 from pathlib import Path
 
+import logstash
+import sentry_sdk
 from api.v1.components.perm_schemas import Permission
 from api.v1.components.role_schemas import Role
 from api.v1.components.user_schemas import ChangePassword, Login, Logout, RefreshToken, Register
@@ -20,15 +21,11 @@ from flask import Flask, request, send_from_directory
 from flask_jwt_extended import JWTManager
 from flask_security import Security
 from flask_swagger_ui import get_swaggerui_blueprint
+from sentry_sdk.integrations.flask import FlaskIntegration
 from utils.command import init_cli
 from utils.tracer import configure_tracer
 
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-
-sentry_sdk.init(dsn=settings.logging.SENTRY_DSN,
-                integrations=[FlaskIntegration()])
-
+sentry_sdk.init(dsn=settings.logging.SENTRY_DSN, integrations=[FlaskIntegration()])
 
 jwt = JWTManager()
 
@@ -132,9 +129,13 @@ def create_app():
     app.logger = logging.getLogger(__name__)
     app.logger.setLevel(logging.INFO)
     app.logger.addFilter(RequestIdFilter())
-    app.logger.addHandler(logstash.LogstashHandler(settings.logging.LOGSTAH_HOST,
-                                                   settings.logging.LOGSTAH_PORT,
-                                                   version=1))
+    app.logger.addHandler(
+        logstash.LogstashHandler(
+            settings.logging.LOGSTAH_HOST,
+            settings.logging.LOGSTAH_PORT,
+            version=1,
+        ),
+    )
 
     logging.basicConfig(level=logging.INFO)
 

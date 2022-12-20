@@ -45,7 +45,7 @@ LOGGING = {
             'level': 'INFO',
             'host': settings.logging.LOGSTAH_HOST,
             'port': settings.logging.LOGSTAH_PORT,
-        }
+        },
     },
     'loggers': {
         'fast_api_service': {

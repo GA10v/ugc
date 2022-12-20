@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+
 from pydantic import BaseSettings
 
 
@@ -15,6 +16,7 @@ class MongoSettings(BaseConfig):
     DB: str = 'ugc_db'
     BOOKMARK: str = 'bookmark_collection'
     RATING: str = 'rating_collection'
+    REVIEW: str = 'review_collection'
 
     @property
     def uri(self):
@@ -65,6 +67,7 @@ class FastapiSettings(BaseConfig):
     EVENT_PREFIX: str = '/ugc_api/v1/event'
     BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
     RATING_PREFIX: str = '/ugc_api/v1/rating'
+    REVIEW_PREFIX: str = '/ugc_api/v1/review'
 
     class Config:
         env_prefix = 'FASTAPI_'

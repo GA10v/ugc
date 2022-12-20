@@ -1,8 +1,9 @@
 import logging
 
+import sentry_sdk
 import uvicorn
 from aiokafka import AIOKafkaProducer
-from api.v1 import bookmarks, events, ratings
+from api.v1 import bookmarks, events, ratings, reviews
 from core.config import settings
 from core.logger import LOGGING
 from db import mongo
@@ -11,14 +12,10 @@ from fastapi.responses import ORJSONResponse
 from middleware.auth import auth_middleware
 from middleware.logger import logging_middleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 from services.broker import producer
 
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-
-
-sentry_sdk.init(dsn=settings.logging.SENTRY_DSN,
-                integrations=[FastApiIntegration()])
+sentry_sdk.init(dsn=settings.logging.SENTRY_DSN, integrations=[FastApiIntegration()])
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -50,7 +47,7 @@ if not settings.debug.DEBUG:
 app.include_router(events.router, prefix=settings.fastapi.EVENT_PREFIX, tags=['events'])
 app.include_router(bookmarks.router, prefix=settings.fastapi.BOOKMARK_PREFIX, tags=['bookmarks'])
 app.include_router(ratings.router, prefix=settings.fastapi.RATING_PREFIX, tags=['ratings'])
-
+app.include_router(reviews.router, prefix=settings.fastapi.REVIEW_PREFIX, tags=['reviews'])
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='0.0.0.0', port=8001, log_config=LOGGING, log_level=logging.DEBUG)

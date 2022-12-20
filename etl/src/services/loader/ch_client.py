@@ -2,7 +2,6 @@ from datetime import datetime
 
 import backoff
 from clickhouse_driver import Client, errors
-
 from core.config import settings
 from core.logger import get_logger
 from models.event import events
