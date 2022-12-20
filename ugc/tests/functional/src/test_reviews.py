@@ -149,4 +149,3 @@ async def test_get_list(session, review_user_ids, review_movie_id, review_text, 
         body = await response.json()
         assert len(body) == 1
         assert body[0]['author_id'] == review_user_ids[0]
-

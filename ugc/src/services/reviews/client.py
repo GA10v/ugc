@@ -12,14 +12,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
 from services.reviews.protocol import ReviewRepository
 
-
 SORT_CONFIG = {
-    ReviewSortEnum.pub_date_asc.value: [
-        {'$sort': {'pub_date': 1}}
-    ],
-    ReviewSortEnum.pub_date_desc.value: [
-        {'$sort': {'pub_date': -1}}
-    ],
+    ReviewSortEnum.pub_date_asc.value: [{'$sort': {'pub_date': 1}}],
+    ReviewSortEnum.pub_date_desc.value: [{'$sort': {'pub_date': -1}}],
     ReviewSortEnum.likes_count_asc.value: [
         {'$addFields': {'count': {'$size': '$likes'}}},
         {'$sort': {'count': 1}},
@@ -36,12 +31,8 @@ SORT_CONFIG = {
         {'$addFields': {'count': {'$size': '$dislikes'}}},
         {'$sort': {'count': -1}},
     ],
-    ReviewSortEnum.author_score_asc.value: [
-        {'$sort': {'author_score': 1}}
-    ],
-    ReviewSortEnum.author_score_desc.value: [
-        {'$sort': {'author_score': -1}}
-    ],
+    ReviewSortEnum.author_score_asc.value: [{'$sort': {'author_score': 1}}],
+    ReviewSortEnum.author_score_desc.value: [{'$sort': {'author_score': -1}}],
 }
 
 
@@ -64,7 +55,10 @@ class ReviewService(ReviewRepository):
         )
         if _doc is None:
             return
-        return _doc['data'][0]['rating']
+        try:
+            return _doc['data'][0]['rating']
+        except KeyError:
+            return
 
     async def _create_doc(self, movie_id: str, text: str, user_id: str) -> dict:
         return {
@@ -74,7 +68,7 @@ class ReviewService(ReviewRepository):
             'pub_date': datetime.today(),
             'likes': [],
             'dislikes': [],
-            'author_score': await self._get_author_score(movie_id, user_id)
+            'author_score': await self._get_author_score(movie_id, user_id),
         }
 
     async def create(self, movie_id: str, text: str, user_id: str) -> ReviewSchema:
@@ -85,14 +79,10 @@ class ReviewService(ReviewRepository):
         :param user_id: UUID пользователя
         :return: ReviewSchema
         """
-        # doc = await self._create_doc(movie_id, text, user_id)
         author_score = await self._get_author_score(movie_id, user_id)
-        doc = ReviewSchema(
-            movie_id=movie_id,
-            text=text,
-            author_id=user_id,
-            author_score=author_score
-        ).dict(exclude={'id'})
+        doc = ReviewSchema(movie_id=movie_id, text=text, author_id=user_id, author_score=author_score).dict(
+            exclude={'id'}
+        )
 
         try:
             result = await self.collection.insert_one(doc)
@@ -113,7 +103,9 @@ class ReviewService(ReviewRepository):
         response = await self.collection.find_one(ObjectId(review_id))
         return ReviewSchema(id=review_id, **response)
 
-    async def get_list(self, movie_id: str, sort: ReviewSortEnum, page_size: int, page_number: int) -> list[ReviewSchema]:
+    async def get_list(
+        self, movie_id: str, sort: ReviewSortEnum, page_size: int, page_number: int
+    ) -> list[ReviewSchema]:
         """
         Возвращает отсортированный список рецензий к фильму.
         :param movie_id: UUID фильма
