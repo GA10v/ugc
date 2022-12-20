@@ -29,6 +29,7 @@ class FastapiSettings(BaseConfig):
     PORT: int = 8000
     EVENT_PREFIX: str = '/ugc_api/v1/event'
     BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
+    REVIEW_PREFIX: str = '/ugc_api/v1/reviews'
 
     @property
     def service_url(self):
@@ -40,8 +41,12 @@ class FastapiSettings(BaseConfig):
 
 class TestDataSettings(BaseConfig):
     USER: str = '6c162475-c7ed-4461-9184-001ef3d9f264'
+    USER_2: str = '8f092fcd-1744-464f-a783-d9a6c4ec59d5'
+    USER_3: str = '96dcc8f1-0b5e-4ed1-864f-264b9449acd2'
     MOVIE_1: str = 'a5a8f573-3cee-4ccc-8a2b-91cb9f55250a'
     MOVIE_2: str = '26e83050-29ef-4163-a99d-b546cac208f8'
+    RATING_1: int = 4
+    RATING_2: int = 6
 
 
 class TestSettings(BaseConfig):
