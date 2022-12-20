@@ -11,7 +11,7 @@ RUN apt-get update && \
     apt-get install -y libpq-dev wait-for-it && \
     apt-get clean
 
-RUN pip install --no-cache-dir poetry==1.1.14
+RUN pip install --no-cache-dir poetry==1.3.0
 
 COPY poetry.lock poetry.lock
 COPY pyproject.toml pyproject.toml

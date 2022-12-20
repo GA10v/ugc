@@ -29,6 +29,8 @@ opentelemetry-sdk = "^1.14.0"
 opentelemetry-instrumentation-flask = "^0.35b0"
 grpcio = "1.49.1"
 opentelemetry-exporter-jaeger = "^1.14.0"
+python-logstash = "^0.4.8"
+sentry-sdk = "^1.12.0"
 
 [tool.poetry.dev-dependencies]
 flake8-bugbear = "^22.6.22"

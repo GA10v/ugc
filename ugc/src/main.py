@@ -9,8 +9,16 @@ from db import mongo
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from middleware.auth import auth_middleware
+from middleware.logger import logging_middleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from services.broker import producer
+
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+
+sentry_sdk.init(dsn=settings.logging.SENTRY_DSN,
+                integrations=[FastApiIntegration()])
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -18,6 +26,8 @@ app = FastAPI(
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
 )
+
+logging_middleware(app=app)
 
 
 @app.on_event('startup')

@@ -1,4 +1,6 @@
 import json
+import logging
+import logstash
 from pathlib import Path
 
 from api.v1.components.perm_schemas import Permission
@@ -21,6 +23,13 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from utils.command import init_cli
 from utils.tracer import configure_tracer
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+sentry_sdk.init(dsn=settings.logging.SENTRY_DSN,
+                integrations=[FlaskIntegration()])
+
+
 jwt = JWTManager()
 
 security = Security()
@@ -29,6 +38,12 @@ swagger_ui = get_swaggerui_blueprint(
     settings.swagger.API_URL,
     config={'app_name': 'My App'},
 )
+
+
+class RequestIdFilter(logging.Filter):
+    def filter(self, record):
+        record.request_id = request.headers.get('X-Request-Id')
+        return True
 
 
 def init_blueprint(app: Flask):
@@ -113,6 +128,15 @@ def create_app():
 
     app = Flask(__name__)
     app.before_request(_before_request)
+
+    app.logger = logging.getLogger(__name__)
+    app.logger.setLevel(logging.INFO)
+    app.logger.addFilter(RequestIdFilter())
+    app.logger.addHandler(logstash.LogstashHandler(settings.logging.LOGSTAH_HOST,
+                                                   settings.logging.LOGSTAH_PORT,
+                                                   version=1))
+
+    logging.basicConfig(level=logging.INFO)
 
     init_blueprint(app)
     init_db(app)
