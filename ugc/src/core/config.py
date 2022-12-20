@@ -5,8 +5,23 @@ from pydantic import BaseSettings
 
 class BaseConfig(BaseSettings):
     class Config:
-        env_file = Path(Path(__file__).parent.parent.parent.parent, '../../../.env')
+        env_file = Path(Path(__file__).parent.parent.parent.parent, '.env')
         env_file_encoding = 'utf-8'
+
+
+class MongoSettings(BaseConfig):
+    HOST: str = 'mongos1'
+    PORT: int = 27019
+    DB: str = 'ugc_db'
+    BOOKMARK: str = 'bookmark_collection'
+    RATING: str = 'rating_collection'
+
+    @property
+    def uri(self):
+        return f'mongodb://{self.HOST}:{self.PORT}'
+
+    class Config:
+        env_prefix = 'MONGO_'
 
 
 class KafkaSettings(BaseConfig):
@@ -47,7 +62,9 @@ class JWTSettings(BaseConfig):
 class FastapiSettings(BaseConfig):
     HOST: str = 'localhost'
     PORT: int = 8000
-    PREFIX: str = '/ugc_api/v1/event'
+    EVENT_PREFIX: str = '/ugc_api/v1/event'
+    BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
+    RATING_PREFIX: str = '/ugc_api/v1/rating'
 
     class Config:
         env_prefix = 'FASTAPI_'
@@ -80,6 +97,7 @@ class ProjectSettings(BaseConfig):
     jwt: JWTSettings = JWTSettings()
     kafka: KafkaSettings = KafkaSettings()
     fastapi: FastapiSettings = FastapiSettings()
+    mongo: MongoSettings = MongoSettings()
     debug: DebugSettings = DebugSettings()
     logging: LogingSettings = LogingSettings()
 
