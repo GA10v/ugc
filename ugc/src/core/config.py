@@ -1,11 +1,7 @@
 from enum import Enum
-from logging import config as logging_config
 from pathlib import Path
 
-from core.logger import LOGGING
 from pydantic import BaseSettings
-
-logging_config.dictConfig(LOGGING)
 
 
 class BaseConfig(BaseSettings):
@@ -70,6 +66,7 @@ class FastapiSettings(BaseConfig):
     PORT: int = 8000
     EVENT_PREFIX: str = '/ugc_api/v1/event'
     BOOKMARK_PREFIX: str = '/ugc_api/v1/bookmark'
+    RATING_PREFIX: str = '/ugc_api/v1/rating'
     REVIEW_PREFIX: str = '/ugc_api/v1/review'
 
     class Config:
@@ -87,6 +84,15 @@ class DebugSettings(BaseConfig):
     DEBUG: bool = True
 
 
+class LogingSettings(BaseConfig):
+    SENTRY_DSN: str = ''
+    LOGSTAH_HOST: str = 'logstash'
+    LOGSTAH_PORT: int = 5044
+
+    class Config:
+        env_prefix = 'LOGGING_'
+
+
 class ProjectSettings(BaseConfig):
     PROJECT_NAME: str = 'UGC'
     BASE_DIR = Path(__file__).parent.parent
@@ -96,6 +102,7 @@ class ProjectSettings(BaseConfig):
     fastapi: FastapiSettings = FastapiSettings()
     mongo: MongoSettings = MongoSettings()
     debug: DebugSettings = DebugSettings()
+    logging: LogingSettings = LogingSettings()
 
 
 settings = ProjectSettings()

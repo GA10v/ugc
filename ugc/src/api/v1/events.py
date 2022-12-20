@@ -3,7 +3,7 @@ from http import HTTPStatus
 from api.v1.utils import EventEnum
 from core.config import settings
 from fastapi import APIRouter, Depends, HTTPException, Response
-from kafka.errors import KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableError
+from kafka import errors
 from models.events import Event
 from services.broker.producer import KafkaProducer, get_producer
 from utils import auth
@@ -11,7 +11,12 @@ from utils import auth
 router = APIRouter()
 auth_handler = auth.AuthHandler()
 
-kafka_exceptions = (KafkaConnectionError, KafkaTimeoutError, KafkaUnavailableError)
+kafka_exceptions = (errors.KafkaConnectionError, errors.KafkaTimeoutError, errors.KafkaUnavailableError)
+
+
+@router.get(path='/produce2')
+async def kafka_produce2():
+    raise ZeroDivisionError
 
 
 @router.post(

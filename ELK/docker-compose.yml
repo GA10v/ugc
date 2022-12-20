@@ -1,0 +1,49 @@
+version: '2.2'
+services:
+    logstash:
+      container_name: logstash
+      image: bitnami/logstash:latest
+      depends_on:
+        - elasticsearch
+      environment:
+        XPACK_MONITORING_ENABLED: "false"
+        ES_HOST: "elasticsearch:9200"
+      ports:
+        - "5047:5047/udp"
+        - "5046:5046/udp"
+        - "5045:5045/udp"
+        - "5044:5044/udp"
+        - "5043:5043/udp"
+      volumes:
+        - ./deploy:/config
+      command: logstash -f /config/logstash.conf
+
+      networks:
+        - service-network
+
+    elasticsearch:
+      image: bitnami/elasticsearch:latest
+      environment:
+        # Указываем ES запуститься в одном экземпляре
+        discovery.type: single-node
+      ports:
+        - 9200:9200
+      volumes:
+        - /tmp/esdata:/tmp/elasticsearch/data
+      # Обратите внимание: не стоит использовать для ELK тот же ES, который задействован для полнотекстового поиска в вашем сервисе
+      networks:
+        - service-network
+
+    kibana:
+      image: bitnami/kibana
+      ports:
+        - "5601:5601"
+      depends_on:
+        - elasticsearch
+
+      networks:
+        - service-network
+
+networks:
+  service-network:
+    external: true

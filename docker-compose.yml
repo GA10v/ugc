@@ -9,6 +9,8 @@ services:
     ports:
       - "22181:2181"
     restart: always
+    networks:
+      - service-network
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -23,6 +25,8 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     restart: always
+    networks:
+      - service-network
 
   init-kafka:
     image: confluentinc/cp-kafka:latest
@@ -38,6 +42,8 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
       "
+    networks:
+      - service-network
 
   nginx:
     container_name: nginx
@@ -51,6 +57,13 @@ services:
       # - "80:80"
       - "443:443"
     restart: always
+    networks:
+      - service-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:5043
+        tag: ugc_nginx
 
   fastapi:
     build: .
@@ -65,6 +78,8 @@ services:
       - zookeeper
       - kafka
     restart: on-failure
+    networks:
+      - service-network
 
   etl:
     container_name: ugc_etl
@@ -86,12 +101,21 @@ services:
       - clickhouse-node5
       - clickhouse-node6
     restart: always
+    networks:
+      - service-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:5045
+        tag: etl
 
   clickhouse-zookeeper:
     image: zookeeper:3.5
     container_name: clickhouse-zookeeper
     hostname: clickhouse-zookeeper
     restart: always
+    networks:
+      - service-network
 
   clickhouse-node1:
     image: yandex/clickhouse-server:20.4
@@ -106,6 +130,8 @@ services:
       - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node2:
     image: yandex/clickhouse-server:20.4
@@ -117,6 +143,8 @@ services:
       - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node3:
     image: yandex/clickhouse-server:20.4
@@ -131,6 +159,8 @@ services:
       - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node4:
     image: yandex/clickhouse-server:20.4
@@ -142,6 +172,8 @@ services:
       - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node5:
     image: yandex/clickhouse-server:20.4
@@ -156,6 +188,8 @@ services:
       - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node6:
     image: yandex/clickhouse-server:20.4
@@ -167,6 +201,8 @@ services:
       - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
 
   mongors1n1:
@@ -180,6 +216,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/data1:/data/db
+    networks:
+      - service-network
 
   mongors1n2:
     container_name: mongors1n2
@@ -192,6 +230,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/data2:/data/db
+    networks:
+      - service-network
 
   mongors1n3:
     container_name: mongors1n3
@@ -204,6 +244,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/data3:/data/db
+    networks:
+      - service-network
 
   mongors2n1:
     container_name: mongors2n1
@@ -216,6 +258,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/data4:/data/db
+    networks:
+      - service-network
 
   mongors2n2:
     container_name: mongors2n2
@@ -228,6 +272,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/data5:/data/db
+    networks:
+      - service-network
 
   mongors2n3:
     container_name: mongors2n3
@@ -240,6 +286,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/data6:/data/db
+    networks:
+      - service-network
 
   mongocfg1:
     container_name: mongocfg1
@@ -250,6 +298,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/config1:/data/db
+    networks:
+      - service-network
 
   mongocfg2:
     container_name: mongocfg2
@@ -260,6 +310,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/config2:/data/db
+    networks:
+      - service-network
 
   mongocfg3:
     container_name: mongocfg3
@@ -270,6 +322,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/mongo_cluster/config3:/data/db
+    networks:
+      - service-network
 
   mongos1:
     container_name: mongos1
@@ -285,6 +339,8 @@ services:
       - "27017"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      - service-network
 
   mongos2:
     container_name: mongos2
@@ -300,3 +356,10 @@ services:
       - "27017"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      - service-network
+
+networks:
+  service-network:
+    external: true
+
