@@ -1,6 +1,5 @@
 from enum import Enum
 from pathlib import Path
-
 from pydantic import BaseSettings
 
 
@@ -17,6 +16,7 @@ class MongoSettings(BaseConfig):
     BOOKMARK: str = 'bookmark_collection'
     RATING: str = 'rating_collection'
     REVIEW: str = 'review_collection'
+
 
     @property
     def uri(self):

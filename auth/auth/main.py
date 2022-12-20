@@ -1,5 +1,6 @@
 import json
 import logging
+import logstash
 from pathlib import Path
 
 import logstash
@@ -26,7 +27,6 @@ from utils.command import init_cli
 from utils.tracer import configure_tracer
 
 sentry_sdk.init(dsn=settings.logging.SENTRY_DSN, integrations=[FlaskIntegration()])
-
 
 jwt = JWTManager()
 
@@ -131,8 +131,13 @@ def create_app():
     app.logger.setLevel(logging.INFO)
     app.logger.addFilter(RequestIdFilter())
     app.logger.addHandler(
-        logstash.LogstashHandler(settings.logging.LOGSTAH_HOST, settings.logging.LOGSTAH_PORT, version=1)
+        logstash.LogstashHandler(
+        settings.logging.LOGSTAH_HOST,
+        settings.logging.LOGSTAH_PORT,
+        version=1,
+       ),
     )
+
 
     logging.basicConfig(level=logging.INFO)
 
