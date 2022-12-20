@@ -7,14 +7,15 @@ from .base import BaseOrjsonModel
 
 
 class ReviewSchema(BaseOrjsonModel):
-    id: str = Field(description='ID рецензии', default='id_for_validate')
+    id: str = Field(description='ID рецензии', default='id_for_validate')  # noqa: VNE003
     movie_id: str = Field(description='ID фильма рецензии')
     text: str = Field(description='Текст рецензии')
     author_id: str = Field(description='ID пользователя, написавшего рецензию')
     pub_date: datetime = Field(description='Дата добавления рецензии', default_factory=datetime.today)
     likes: list[str] = Field(description='Список ID пользователей, добавивших лайк рецензии', default_factory=list)
     dislikes: list[str] = Field(
-        description='Список ID пользователей, добавивших дизлайк рецензии', default_factory=list
+        description='Список ID пользователей, добавивших дизлайк рецензии',
+        default_factory=list,
     )
     author_score: Optional[int] = Field(description='Авторская оценка фильму', default=None)
 

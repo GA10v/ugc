@@ -4,7 +4,6 @@ from typing import Optional
 from api.v1.utils import ReviewReactionEnum, ReviewSortEnum
 from bson.objectid import ObjectId
 from core.config import settings
-from core.logger import get_logger
 from db.mongo import get_mongo
 from fastapi import Depends
 from models.reviews import ReviewSchema
@@ -80,9 +79,12 @@ class ReviewService(ReviewRepository):
         :return: ReviewSchema
         """
         author_score = await self._get_author_score(movie_id, user_id)
-        doc = ReviewSchema(movie_id=movie_id, text=text, author_id=user_id, author_score=author_score).dict(
-            exclude={'id'}
-        )
+        doc = ReviewSchema(
+            movie_id=movie_id,
+            text=text,
+            author_id=user_id,
+            author_score=author_score,
+        ).dict(exclude={'id'})
 
         try:
             result = await self.collection.insert_one(doc)
@@ -104,7 +106,11 @@ class ReviewService(ReviewRepository):
         return ReviewSchema(id=review_id, **response)
 
     async def get_list(
-        self, movie_id: str, sort: ReviewSortEnum, page_size: int, page_number: int
+        self,
+        movie_id: str,
+        sort: ReviewSortEnum,
+        page_size: int,
+        page_number: int,
     ) -> list[ReviewSchema]:
         """
         Возвращает отсортированный список рецензий к фильму.
@@ -118,7 +124,7 @@ class ReviewService(ReviewRepository):
         limit_value = page_size
 
         agg_list = []
-        agg_list.append({'$match': {'movie_id': movie_id}})
+        agg_list.append({'$match': {'movie_id': movie_id}})  # noqa: PIE799
         agg_list.extend(SORT_CONFIG[sort.value])
         agg_list.extend([{'$skip': skip_value}, {'$limit': limit_value}])
         cursor = self.collection.aggregate(agg_list)

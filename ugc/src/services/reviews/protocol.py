@@ -1,4 +1,4 @@
-from typing import Optional, Protocol
+from typing import Protocol
 
 from services.reviews.layer_models import Review
 

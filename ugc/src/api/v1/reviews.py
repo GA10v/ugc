@@ -2,8 +2,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from api.v1.utils import ReviewReactionEnum, ReviewSortEnum
-from core.config import settings
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from models.reviews import ReviewSchema
 from services.reviews.client import ReviewService, get_review_service
 from utils import auth
@@ -43,7 +42,9 @@ async def add_review_reaction(
     _user: dict = Depends(auth_handler.auth_wrapper),
 ) -> ReviewSchema:
     return await review_service.add_like_or_dislike(
-        review_id=review_id, user_id=_user.get('user_id'), reaction=reaction
+        review_id=review_id,
+        user_id=_user.get('user_id'),
+        reaction=reaction,
     )
 
 
@@ -61,4 +62,9 @@ async def get_reviews(
     review_service: ReviewService = Depends(get_review_service),
     _user: dict = Depends(auth_handler.auth_wrapper),
 ):
-    return await review_service.get_list(movie_id=movie_id, sort=sort, page_size=page_size, page_number=page_number)
+    return await review_service.get_list(
+        movie_id=movie_id,
+        sort=sort,
+        page_size=page_size,
+        page_number=page_number,
+    )

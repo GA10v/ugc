@@ -1,6 +1,5 @@
 import json
 import logging
-import logstash
 from pathlib import Path
 
 import logstash
@@ -132,12 +131,11 @@ def create_app():
     app.logger.addFilter(RequestIdFilter())
     app.logger.addHandler(
         logstash.LogstashHandler(
-        settings.logging.LOGSTAH_HOST,
-        settings.logging.LOGSTAH_PORT,
-        version=1,
-       ),
+            settings.logging.LOGSTAH_HOST,
+            settings.logging.LOGSTAH_PORT,
+            version=1,
+        ),
     )
-
 
     logging.basicConfig(level=logging.INFO)
 

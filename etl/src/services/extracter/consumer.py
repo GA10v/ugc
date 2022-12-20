@@ -1,6 +1,5 @@
 import backoff
 from confluent_kafka import Consumer, KafkaError
-
 from services.extracter.protocol import ExtracterProtocol
 
 

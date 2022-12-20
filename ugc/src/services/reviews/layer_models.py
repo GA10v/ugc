@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class Review(BaseModel):
-    id: str
+    id: str  # noqa: VNE003
     movie_id: str
     text: str
     author_id: str

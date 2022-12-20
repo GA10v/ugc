@@ -1,4 +1,3 @@
-import uuid
 from http import HTTPStatus
 
 import jwt
