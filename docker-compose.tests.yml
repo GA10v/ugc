@@ -23,6 +23,11 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     restart: always
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
   init-kafka:
     image: confluentinc/cp-kafka:latest
@@ -49,8 +54,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - zookeeper
-      - kafka
+      kafka:
+        condition: service_healthy
     restart: on-failure
 
   ugc_nginx:
@@ -206,7 +211,5 @@ services:
     env_file:
       - .env
     depends_on:
-      - zookeeper
-      - kafka
-      - fastapi
-    restart: on-failure
+      kafka:
+          condition: service_healthy
