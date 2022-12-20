@@ -1,6 +1,8 @@
 import logging
 import logging.config
 
+from core.config import settings
+
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 LOG_DEFAULT_HANDLERS = [
     'console',
@@ -38,17 +40,24 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'stream': 'ext://sys.stdout',
         },
+        'logstah': {
+            'class': 'logstash.LogstashHandler',
+            'level': 'INFO',
+            'host': settings.logging.LOGSTAH_HOST,
+            'port': settings.logging.LOGSTAH_PORT,
+        },
     },
     'loggers': {
-        '': {
-            'handlers': LOG_DEFAULT_HANDLERS,
+        'fast_api_service': {
+            'handlers': ['logstah', 'console'],
             'level': 'INFO',
         },
         'uvicorn.error': {
             'level': 'INFO',
+            'handlers': ['logstah', 'console'],
         },
         'uvicorn.access': {
-            'handlers': ['access'],
+            'handlers': ['access', 'logstah', 'console'],
             'level': 'INFO',
             'propagate': False,
         },

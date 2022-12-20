@@ -21,6 +21,7 @@ repos:
     -   id: flake8
         exclude: migrations
         args: [--config, ./.flake8, --exit-zero, --format=html, --htmldir=artifact/]
+
         additional_dependencies:
           - flake8-bugbear
           - flake8-variables-names

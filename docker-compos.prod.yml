@@ -7,6 +7,8 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     restart: always
+    networks:
+      - service-network
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -19,6 +21,8 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     restart: always
+    networks:
+      - service-network
 
   init-kafka:
     image: confluentinc/cp-kafka:latest
@@ -35,6 +39,9 @@ services:
       kafka-topics --bootstrap-server kafka:29092 --list
       "
 
+    networks:
+      - service-network
+
   nginx:
     container_name: nginx
     image: nginx:1.23
@@ -46,6 +53,13 @@ services:
     ports:
       - "443:443"
     restart: always
+    networks:
+      - service-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:5043
+        tag: ugc_nginx
 
   fastapi:
     build: .
@@ -58,6 +72,8 @@ services:
       - zookeeper
       - kafka
     restart: on-failure
+    networks:
+      - service-network
 
   etl:
     container_name: ugc_etl
@@ -77,12 +93,21 @@ services:
       - clickhouse-node5
       - clickhouse-node6
     restart: always
+    networks:
+      - service-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:5045
+        tag: etl
 
   clickhouse-zookeeper:
     image: zookeeper:3.5
     container_name: clickhouse-zookeeper
     hostname: clickhouse-zookeeper
     restart: always
+    networks:
+      - service-network
 
   clickhouse-node1:
     image: yandex/clickhouse-server:20.4
@@ -94,6 +119,8 @@ services:
       - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node2:
     image: yandex/clickhouse-server:20.4
@@ -105,6 +132,8 @@ services:
       - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node3:
     image: yandex/clickhouse-server:20.4
@@ -116,6 +145,8 @@ services:
       - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node4:
     image: yandex/clickhouse-server:20.4
@@ -127,6 +158,8 @@ services:
       - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node5:
     image: yandex/clickhouse-server:20.4
@@ -138,6 +171,8 @@ services:
       - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
 
   clickhouse-node6:
     image: yandex/clickhouse-server:20.4
@@ -149,3 +184,9 @@ services:
       - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
+
+networks:
+  service-network:
+    external: true

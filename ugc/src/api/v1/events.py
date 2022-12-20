@@ -14,6 +14,11 @@ auth_handler = auth.AuthHandler()
 kafka_exceptions = (errors.KafkaConnectionError, errors.KafkaTimeoutError, errors.KafkaUnavailableError)
 
 
+@router.get(path='/produce2')
+async def kafka_produce2():
+    raise ZeroDivisionError
+
+
 @router.post(
     path='/produce/{movie_id}/{event_type}',
     response_model=Event,
