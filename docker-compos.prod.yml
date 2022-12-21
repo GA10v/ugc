@@ -38,7 +38,6 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
       "
-
     networks:
       - service-network
 
@@ -184,6 +183,164 @@ services:
       - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - zookeeper
+    networks:
+      - service-network
+
+
+  mongors1n1:
+    container_name: mongors1n1
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data1:/data/db
+    networks:
+      - service-network
+
+  mongors1n2:
+    container_name: mongors1n2
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data2:/data/db
+    networks:
+      - service-network
+
+  mongors1n3:
+    container_name: mongors1n3
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data3:/data/db
+    networks:
+      - service-network
+
+  mongors2n1:
+    container_name: mongors2n1
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data4:/data/db
+    networks:
+      - service-network
+
+  mongors2n2:
+    container_name: mongors2n2
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data5:/data/db
+    networks:
+      - service-network
+
+  mongors2n3:
+    container_name: mongors2n3
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data6:/data/db
+    networks:
+      - service-network
+
+  mongocfg1:
+    container_name: mongocfg1
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config1:/data/db
+    networks:
+      - service-network
+
+  mongocfg2:
+    container_name: mongocfg2
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config2:/data/db
+    networks:
+      - service-network
+
+  mongocfg3:
+    container_name: mongocfg3
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config3:/data/db
+    networks:
+      - service-network
+
+  mongos1:
+    container_name: mongos1
+    image: mongo
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongocfg3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017 --bind_ip 0.0.0.0
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - service-network
+
+  mongos2:
+    container_name: mongos2
+    image: mongo
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongocfg3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017 --bind_ip 0.0.0.0
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - service-network
+
+  init-mongo:
+    container_name: init-mongo
+    build:
+      context: .
+      dockerfile: ./mongo_cnf/Dockerfile
+    depends_on:
+      - mongos1
+      - mongos2
+    links:
+      - mongors1n1:mongors1n1
+      - mongors2n1:mongors2n1
+      - mongocfg1:mongocfg1
+      - mongos1:mongos1
+    environment:
+      - PORT=27017
+    entrypoint: [ "/scripts/setup.sh" ]
     networks:
       - service-network
 
