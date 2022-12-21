@@ -42,12 +42,7 @@ async def kafka_produce(
     return Response('Permission denied', HTTPStatus.FORBIDDEN)
 
 
-@router.post(
-    path='/batch-produce',
-    summary='Отправка пачки событий.',
-    description='Отправка пачки событий в топик kafka',
-    response_description='Пачка событий',
-)
+@router.post(path='/batch-produce', include_in_schema=False)
 async def kafka_batch_produce(
     batch_size: int,
     producer: KafkaProducer = Depends(get_producer),
