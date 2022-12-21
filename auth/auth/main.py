@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 import logstash
-import sentry_sdk
 from api.v1.components.perm_schemas import Permission
 from api.v1.components.role_schemas import Role
 from api.v1.components.user_schemas import ChangePassword, Login, Logout, RefreshToken, Register
@@ -21,11 +20,11 @@ from flask import Flask, request, send_from_directory
 from flask_jwt_extended import JWTManager
 from flask_security import Security
 from flask_swagger_ui import get_swaggerui_blueprint
-from sentry_sdk.integrations.flask import FlaskIntegration
 from utils.command import init_cli
+from utils.sentry import init_sentry
 from utils.tracer import configure_tracer
 
-sentry_sdk.init(dsn=settings.logging.SENTRY_DSN, integrations=[FlaskIntegration()])
+init_sentry()
 
 jwt = JWTManager()
 
