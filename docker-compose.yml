@@ -361,4 +361,5 @@ services:
 
 networks:
   service-network:
+    external: true
 

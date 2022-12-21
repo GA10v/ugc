@@ -136,3 +136,6 @@ dmypy.json
 
 # My test file
 1.py
+
+# flake8 artifact
+artifact/
