@@ -26,13 +26,16 @@ class BookmarkService(BookmarkRepository):
         _response = await self.collection.find_one({'user_id': user_id})
         return BookmarksSchema(**_response)
 
-    async def delete(self, movie_id: str, user_id: str) -> BookmarksSchema:
+    async def delete(self, movie_id: str, user_id: str) -> Optional[BookmarksSchema]:
         """
         Удаляет закладку.
         :param movie_id: UUID фильма
         :param user_id: UUID пользователя
         :return: BookmarksSchema
         """
+        _doc = await self.collection.find_one({'user_id': user_id})
+        if movie_id not in _doc['bookmarks']:
+            return
         await self.collection.update_one({'user_id': user_id}, {'$pull': {'bookmarks': movie_id}})
         _response = await self.collection.find_one({'user_id': user_id})
         return BookmarksSchema(**_response)

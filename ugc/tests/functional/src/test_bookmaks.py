@@ -58,6 +58,16 @@ async def test_add_ok(session, access_token, data_one_bm, data_two_bm):
         assert body == data_two_bm
 
 
+async def test_delete_not_found(session, access_token, data_one_bm):
+    """Проверка удаления закладок по несуществующему id."""
+    _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
+    headers = {'Authorization': 'Bearer ' + access_token}
+
+    url = _url + 'wrong_movie_id'
+    async with session.delete(url, headers=headers) as response:
+        assert response.status == HTTPStatus.NOT_FOUND
+
+
 async def test_delete_ok(session, access_token, data_one_bm):
     """Проверка удаления закладок."""
     _url = f'{settings.fastapi.service_url}{settings.fastapi.BOOKMARK_PREFIX}/'
