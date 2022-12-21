@@ -1,6 +1,5 @@
 import logging
 
-import sentry_sdk
 import uvicorn
 from aiokafka import AIOKafkaProducer
 from api.v1 import bookmarks, events, ratings, reviews
@@ -12,10 +11,10 @@ from fastapi.responses import ORJSONResponse
 from middleware.auth import auth_middleware
 from middleware.logger import logging_middleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from sentry_sdk.integrations.fastapi import FastApiIntegration
 from services.broker import producer
+from utils.sentry import init_sentry
 
-sentry_sdk.init(dsn=settings.logging.SENTRY_DSN, integrations=[FastApiIntegration()])
+init_sentry()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

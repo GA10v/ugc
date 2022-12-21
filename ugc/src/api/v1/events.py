@@ -14,11 +14,6 @@ auth_handler = auth.AuthHandler()
 kafka_exceptions = (errors.KafkaConnectionError, errors.KafkaTimeoutError, errors.KafkaUnavailableError)
 
 
-@router.get(path='/produce2')
-async def kafka_produce2():
-    raise ZeroDivisionError
-
-
 @router.post(
     path='/produce/{movie_id}/{event_type}',
     response_model=Event,
@@ -42,12 +37,7 @@ async def kafka_produce(
     return Response('Permission denied', HTTPStatus.FORBIDDEN)
 
 
-@router.post(
-    path='/batch-produce',
-    summary='Отправка пачки событий.',
-    description='Отправка пачки событий в топик kafka',
-    response_description='Пачка событий',
-)
+@router.post(path='/batch-produce', include_in_schema=False)
 async def kafka_batch_produce(
     batch_size: int,
     producer: KafkaProducer = Depends(get_producer),
