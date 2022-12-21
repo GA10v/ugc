@@ -1,0 +1,365 @@
+version: '3'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+    restart: always
+    networks:
+      - service-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: always
+    networks:
+      - service-network
+
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      kafka-topics --bootstrap-server kafka:29092 --list
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic views --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rating --replication-factor 1 --partitions 1
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
+    networks:
+      - service-network
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.23
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs:/etc/nginx/conf.d:ro
+    depends_on:
+      - fastapi
+    ports:
+      # - "80:80"
+      - "443:443"
+    restart: always
+    networks:
+      - service-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:5043
+        tag: ugc_nginx
+
+  fastapi:
+    build: .
+    container_name: ugc_fastapi
+    expose:
+      - "8001"
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    depends_on:
+      - zookeeper
+      - kafka
+    restart: on-failure
+    networks:
+      - service-network
+
+  etl:
+    container_name: ugc_etl
+    build:
+      context: ./etl
+      dockerfile: ./Dockerfile
+    # volumes:
+    #   - etl_data:/src/data
+    env_file:
+      - .env
+    depends_on:
+      - fastapi
+      - kafka
+      - init-kafka
+      - clickhouse-node1
+      - clickhouse-node2
+      - clickhouse-node3
+      - clickhouse-node4
+      - clickhouse-node5
+      - clickhouse-node6
+    restart: always
+    networks:
+      - service-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:5045
+        tag: etl
+
+  clickhouse-zookeeper:
+    image: zookeeper:3.5
+    container_name: clickhouse-zookeeper
+    hostname: clickhouse-zookeeper
+    restart: always
+    networks:
+      - service-network
+
+  clickhouse-node1:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node1
+    hostname: clickhouse-node1
+    restart: always
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./ch_conf/node1:/etc/clickhouse-server
+      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - zookeeper
+    networks:
+      - service-network
+
+  clickhouse-node2:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node2
+    hostname: clickhouse-node2
+    restart: always
+    volumes:
+      - ./ch_conf/node2:/etc/clickhouse-server
+      - ./ch_conf/sql/node1.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - zookeeper
+    networks:
+      - service-network
+
+  clickhouse-node3:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node3
+    hostname: clickhouse-node3
+    restart: always
+    ports:
+      - "8124:8123"
+      - "9001:9000"
+    volumes:
+      - ./ch_conf/node3:/etc/clickhouse-server
+      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - zookeeper
+    networks:
+      - service-network
+
+  clickhouse-node4:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node4
+    hostname: clickhouse-node4
+    restart: always
+    volumes:
+      - ./ch_conf/node4:/etc/clickhouse-server
+      - ./ch_conf/sql/node3.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - zookeeper
+    networks:
+      - service-network
+
+  clickhouse-node5:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node5
+    hostname: clickhouse-node5
+    restart: always
+    ports:
+      - "8125:8123"
+      - "9002:9000"
+    volumes:
+      - ./ch_conf/node5:/etc/clickhouse-server
+      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - zookeeper
+    networks:
+      - service-network
+
+  clickhouse-node6:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node6
+    hostname: clickhouse-node6
+    restart: always
+    volumes:
+      - ./ch_conf/node6:/etc/clickhouse-server
+      - ./ch_conf/sql/node5.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - zookeeper
+    networks:
+      - service-network
+
+
+  mongors1n1:
+    container_name: mongors1n1
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    ports:
+      - 27017:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data1:/data/db
+    networks:
+      - service-network
+
+  mongors1n2:
+    container_name: mongors1n2
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    ports:
+      - 27027:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data2:/data/db
+    networks:
+      - service-network
+
+  mongors1n3:
+    container_name: mongors1n3
+    image: mongo
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    ports:
+      - 27037:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data3:/data/db
+    networks:
+      - service-network
+
+  mongors2n1:
+    container_name: mongors2n1
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27047:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data4:/data/db
+    networks:
+      - service-network
+
+  mongors2n2:
+    container_name: mongors2n2
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27057:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data5:/data/db
+    networks:
+      - service-network
+
+  mongors2n3:
+    container_name: mongors2n3
+    image: mongo
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27067:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data6:/data/db
+    networks:
+      - service-network
+
+  mongocfg1:
+    container_name: mongocfg1
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config1:/data/db
+    networks:
+      - service-network
+
+  mongocfg2:
+    container_name: mongocfg2
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config2:/data/db
+    networks:
+      - service-network
+
+  mongocfg3:
+    container_name: mongocfg3
+    image: mongo
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config3:/data/db
+    networks:
+      - service-network
+
+  mongos1:
+    container_name: mongos1
+    image: mongo
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongocfg3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017 --bind_ip 0.0.0.0
+    ports:
+      - 27019:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - service-network
+
+  mongos2:
+    container_name: mongos2
+    image: mongo
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongocfg3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017 --bind_ip 0.0.0.0
+    ports:
+      - 27020:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - service-network
+
+networks:
+  service-network:
+    external: true
+
