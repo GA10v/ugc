@@ -1,6 +1,6 @@
 [![Build Status](https://github.com/GA10v/ugc_sprint_1/actions/workflows/checks.yml/badge.svg?=main)](https://github.com/GA10v/ugc_sprint_1/actions/workflows/checks.yml)
 
-# Проектная работа 8 спринта
+# Проектная работа 9 спринта
 
 Ссылка на [проект](https://github.com/GA10v/ugc_sprint_1)
 
@@ -12,11 +12,13 @@
 1. Установить зависимости командой
     ```$ poetry install```
 2. Создать файл конфигурации ```.env``` в корне проекта и заполнить его согласно ```example.env ```
-3. Cервис ETL запускается командой
+3. Для запуска контейнеров кластера ClickHouse см. [README](./ch_conf/README.md)
+4. Для запуска контейнеров кластера MongoDB см. [README](./mongo_cnf/README.md)
+5. Cервис ETL запускается командой
     ```$ python3 etl/src/main.py```
-4. Сервис UGC запускается командой
+6. Сервис UGC запускается командой
     ```$ python3 ugc/src/main.py```
-5. Перейти к документации по url: ```http://localhost:8001/api/openapi```
+7. Перейти к документации по url: ```http://localhost:8001/api/openapi```
 
 
 ### Запуск приложения в docker

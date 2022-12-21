@@ -14,9 +14,31 @@ node UGC {
     frame OLTP {
         file UGC_API as service
         card Kafka
+        database MongoDB{
+            component "cluster"{
+                component "shard_1"{
+                    database "shard1\nreplica1" as mongo1_1
+                    database "shard1\nreplica2" as mongo1_2
+                    database "shard1\nreplica3" as mongo1_3
+
+                    mongo1_1 <->  mongo1_2
+                    mongo1_2 <->  mongo1_3
+                }
+                component "shard_2"{
+                    database "shard1\nreplica1" as mongo2_1
+                    database "shard1\nreplica2" as mongo2_2
+                    database "shard1\nreplica3" as mongo2_3
+
+                    mongo2_1 <->  mongo2_2
+                    mongo2_2 <->  mongo2_3
+                }
+            }
+        }
 
         service -left-> Kafka: данные о событиях
         service <--> Flask_app
+        service <-up-> MongoDB: запросы
+
     }
 
     frame ETL as ETL_Kafka_Zookeeper {
@@ -64,6 +86,7 @@ node UGC {
     }
 }
 }
+
 
 NGINX <--> service: события
 Kafka --> Extract: данные о событииях
