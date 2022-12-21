@@ -325,5 +325,24 @@ services:
     networks:
       - service-network
 
+  init-mongo:
+    container_name: init-mongo
+    build:
+      context: .
+      dockerfile: ./mongo_cnf/Dockerfile
+    depends_on:
+      - mongos1
+      - mongos2
+    links:
+      - mongors1n1:mongors1n1
+      - mongors2n1:mongors2n1
+      - mongocfg1:mongocfg1
+      - mongos1:mongos1
+    environment:
+      - PORT=27017
+    entrypoint: [ "/scripts/setup.sh" ]
+    networks:
+      - service-network
+
 networks:
   service-network:
