@@ -33,7 +33,10 @@ async def delete_bookmark(
     bookmark_service: BookmarkService = Depends(get_bookmark_service),
     _user: dict = Depends(auth_handler.auth_wrapper),
 ) -> BookmarksSchema:
-    return await bookmark_service.delete(movie_id=movie_id, user_id=_user.get('user_id'))
+    _doc = await bookmark_service.delete(movie_id=movie_id, user_id=_user.get('user_id'))
+    if not _doc:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='User not found')
+    return _doc
 
 
 @router.get(

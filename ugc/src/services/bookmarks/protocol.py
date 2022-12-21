@@ -10,7 +10,7 @@ class BookmarkRepository(Protocol):
         ...
 
     @abstractmethod
-    async def delete(self, *args, **kwargs) -> Bookmarks:
+    async def delete(self, *args, **kwargs) -> Optional[Bookmarks]:
         ...
 
     @abstractmethod
