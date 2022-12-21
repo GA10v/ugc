@@ -1540,7 +1540,7 @@ testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy 
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 
@@ -1724,7 +1724,7 @@ tornado = ["tornado (>=5)"]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1925,7 +1925,7 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 name = "vertica-python"
 version = "1.2.0"
 description = "Official native Python client for the Vertica database."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -2022,7 +2022,7 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "24bdfedda1c6c042382ed18642b10fa8882dc8da9a473eeefb9170c5443bc200"
+content-hash = "afd920a714e3bd5bbc370de74e7d15955c5afdd61f51fdf36ca8565f8028888b"
 
 [metadata.files]
 aiohttp = [
