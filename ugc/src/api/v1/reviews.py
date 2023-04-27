@@ -3,7 +3,7 @@ from typing import Optional
 
 from api.v1.utils import ReviewReactionEnum, ReviewSortEnum
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from models.reviews import ReviewSchema
+from models.reviews import ReviewResponse
 from services.reviews.client import ReviewService, get_review_service
 from utils import auth
 
@@ -13,7 +13,7 @@ auth_handler = auth.AuthHandler()
 
 @router.post(
     path='/',
-    response_model=ReviewSchema,
+    response_model=ReviewResponse,
     summary='Добавление рецензии к фильму',
     description='Добавление рецензии к фильму',
 )
@@ -22,7 +22,7 @@ async def create_review(
     text: str = Body(description='Текст рецензии'),
     review_service: ReviewService = Depends(get_review_service),
     _user: dict = Depends(auth_handler.auth_wrapper),
-) -> ReviewSchema:
+) -> ReviewResponse:
     result = await review_service.create(movie_id=movie_id, text=text, user_id=_user.get('user_id'))
     if not result:
         raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="User can't write more than one movie review")
@@ -31,7 +31,7 @@ async def create_review(
 
 @router.put(
     path='/{review_id}/{reaction}',
-    response_model=ReviewSchema,
+    response_model=ReviewResponse,
     summary='Добавление лайка или дизлайка к рецензии',
     description='Добавление лайка или дизлайка к рецензии',
 )
@@ -40,7 +40,7 @@ async def add_review_reaction(
     reaction: ReviewReactionEnum = Path(description='Реакция пользователя'),
     review_service: ReviewService = Depends(get_review_service),
     _user: dict = Depends(auth_handler.auth_wrapper),
-) -> ReviewSchema:
+) -> ReviewResponse:
     return await review_service.add_like_or_dislike(
         review_id=review_id,
         user_id=_user.get('user_id'),
@@ -50,7 +50,7 @@ async def add_review_reaction(
 
 @router.get(
     path='/',
-    response_model=list[ReviewSchema],
+    response_model=list[ReviewResponse],
     summary='Просмотр списка рецензий',
     description='Просмотр списка рецензий по фильму с возможностью гибкой сортировки',
 )

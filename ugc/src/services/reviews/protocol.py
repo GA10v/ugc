@@ -16,3 +16,11 @@ class ReviewRepository(Protocol):
     @abstractmethod
     async def get_list(self, movie_id: str, sort: str, page_size: int, page_number: int) -> list[Review]:
         ...
+
+    @abstractmethod
+    async def update(self, movie_id: str, sort: str, page_size: int, page_number: int) -> Review:
+        ...
+
+    @abstractmethod
+    async def delete(self, movie_id: str, sort: str, page_size: int, page_number: int) -> Review:
+        ...
