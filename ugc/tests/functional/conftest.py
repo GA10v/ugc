@@ -22,7 +22,7 @@ def event_loop():
     loop.close()
 
 
-@pytest_asyncio.fixture(scope='session')
+# @pytest_asyncio.fixture(scope='session')
 def access_token():
     data = {'sub': settings.data.USER, 'permissions': [], 'is_super': True}
     return jwt.encode(data, settings.jwt.SECRET_KEY, settings.jwt.ALGORITHM)
@@ -41,3 +41,6 @@ def event_type():
 @pytest_asyncio.fixture(scope='session')
 def event():
     return randint(1, 10000)
+
+
+print(type(access_token()))

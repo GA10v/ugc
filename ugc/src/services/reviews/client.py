@@ -6,7 +6,7 @@ from bson.objectid import ObjectId
 from core.config import settings
 from db.mongo import get_mongo
 from fastapi import Depends
-from models.reviews import ReviewSchema
+from models.reviews import ReviewResponse, ReviewSchema
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
 from services.reviews.protocol import ReviewRepository
@@ -59,18 +59,18 @@ class ReviewService(ReviewRepository):
         except KeyError:
             return
 
-    async def _create_doc(self, movie_id: str, text: str, user_id: str) -> dict:
+    async def _create_doc(self, data: ReviewSchema) -> dict:
         return {
-            'movie_id': movie_id,
-            'text': text,
-            'author_id': user_id,
-            'pub_date': datetime.today(),
-            'likes': [],
-            'dislikes': [],
-            'author_score': await self._get_author_score(movie_id, user_id),
+            'movie_id': data['movie_id'],
+            'text': data['text'],
+            'author_id': data['user_id'],
+            'pub_date': data['user_id'],
+            'likes': data['likes'],
+            'dislikes': data['dislikes'],
+            'author_score': await self._get_author_score(data['movie_id'], data['user_id']),
         }
 
-    async def create(self, movie_id: str, text: str, user_id: str) -> ReviewSchema:
+    async def create(self, movie_id: str, text: str, user_id: str) -> ReviewResponse:
         """
         Добавляет рецензию.
         :param movie_id: UUID фильма
@@ -83,17 +83,17 @@ class ReviewService(ReviewRepository):
             movie_id=movie_id,
             text=text,
             author_id=user_id,
-            author_score=author_score,
         ).dict(exclude={'id'})
 
         try:
             result = await self.collection.insert_one(doc)
         except DuplicateKeyError:
             return
-        response = await self.collection.find_one(result.inserted_id)
-        return ReviewSchema(id=str(response['_id']), **response)
+        _doc = await self.collection.find_one(result.inserted_id)
+        response = self._create_doc(_doc)
+        return ReviewResponse(id=str(response['_id']), **response)
 
-    async def add_like_or_dislike(self, review_id: str, user_id: str, reaction: ReviewReactionEnum) -> ReviewSchema:
+    async def add_like_or_dislike(self, review_id: str, user_id: str, reaction: ReviewReactionEnum) -> ReviewResponse:
         """
         Добавляет лайк или дизлайк рецензии.
         :param review_id: ID рецензии
@@ -103,7 +103,7 @@ class ReviewService(ReviewRepository):
         """
         await self.collection.update_one({'_id': ObjectId(review_id)}, {'$addToSet': {reaction: user_id}})
         response = await self.collection.find_one(ObjectId(review_id))
-        return ReviewSchema(id=review_id, **response)
+        return ReviewResponse(id=review_id, **response)
 
     async def get_list(
         self,
@@ -111,7 +111,7 @@ class ReviewService(ReviewRepository):
         sort: ReviewSortEnum,
         page_size: int,
         page_number: int,
-    ) -> list[ReviewSchema]:
+    ) -> list[ReviewResponse]:
         """
         Возвращает отсортированный список рецензий к фильму.
         :param movie_id: UUID фильма
@@ -131,7 +131,7 @@ class ReviewService(ReviewRepository):
 
         response = []
         for doc in await cursor.to_list(length=None):
-            response.append(ReviewSchema(id=str(doc['_id']), **doc))
+            response.append(ReviewResponse(id=str(doc['_id']), **doc))
         return response
 
 
