@@ -1,8 +1,12 @@
 [![Build Status](https://github.com/GA10v/ugc_sprint_1/actions/workflows/checks.yml/badge.svg?=main)](https://github.com/GA10v/ugc_sprint_1/actions/workflows/checks.yml)
 
-# Проектная работа 9 спринта
+# UGC API
 
-Ссылка на [проект](https://github.com/GA10v/ugc_sprint_1)
+Сервис для хранения аналитической информации и UGC, написанный с использованием библиотеки FastAPI, брокера сообщений Apache Kafka, баз данных ClickHouse и MongoDB. Дополнительно, для выбора БД было проведено исследование производительности баз ClickHouse, MongoDB и Vertica.
+
+## Схема проекта
+
+![](architecture/UGC.png)
 
 ## Работа с проектом
 
